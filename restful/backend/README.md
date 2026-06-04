@@ -2,6 +2,10 @@
 
 A distributed backend system built with **NestJS Microservices Architecture**, migrated from a monolithic design to demonstrate proper microservices principles including service separation, event-driven communication, and independent scalability.
 
+## UI/UX Mockups
+
+[View Figma Design](https://www.figma.com/design/0JUDZFtYe7VOSQBrXM26pc/Fire-Extinguisher-Management-System?node-id=0-1&t=hVO1MLVDgHq7qMo5-1)
+
 ---
 
 ## Architecture Overview

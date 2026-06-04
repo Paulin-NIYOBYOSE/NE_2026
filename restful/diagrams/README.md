@@ -2,6 +2,10 @@
 
 This folder contains all architecture, DFD, and database design files for the **Fire Extinguisher Management System**.
 
+## UI/UX Mockups
+
+[View Figma Design](https://www.figma.com/design/0JUDZFtYe7VOSQBrXM26pc/Fire-Extinguisher-Management-System?node-id=0-1&t=hVO1MLVDgHq7qMo5-1)
+
 ## Folder Structure
 
 ```

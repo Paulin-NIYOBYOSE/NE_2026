@@ -1,6 +1,43 @@
-# React + TypeScript + Vite
+# Fire Extinguisher Management System — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React 19 + TypeScript + Vite + Tailwind CSS frontend for the Fire Extinguisher Management System.
+
+## UI/UX Mockups
+
+[View Figma Design](https://www.figma.com/design/0JUDZFtYe7VOSQBrXM26pc/Fire-Extinguisher-Management-System?node-id=0-1&t=hVO1MLVDgHq7qMo5-1)
+
+## Quick Start
+
+```bash
+npm install
+npm run dev
+```
+
+Runs at http://localhost:3000
+
+## Tech Stack
+
+- React 19 + TypeScript
+- Vite (build tool)
+- Tailwind CSS (styling)
+- Zustand (state management)
+- React Router (routing)
+- Axios (HTTP client)
+- Lucide React (icons)
+
+## Features
+
+- Role-based navigation (admin/inspector/technician/user)
+- Dashboard with statistics cards
+- Extinguisher CRUD with status badges
+- Inspection scheduling with date pickers
+- Maintenance logging with cost tracking
+- Reports generation and export
+- Notifications center with real-time counts
+- Audit logs viewer (admin only)
+- Dark/light theme toggle
+
+---
 
 Currently, two official plugins are available:
 
