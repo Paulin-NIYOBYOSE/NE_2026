@@ -1,0 +1,104 @@
+graph TB
+    subgraph Client["Client Layer"]
+        FE["React SPA (Vite + TS + Tailwind)
+        Port: 3000-3002"]
+        Browser["Browser / Mobile"]
+    end
+
+    subgraph Gateway["API Gateway Layer"]
+        APIGW["API Gateway (NestJS)
+        Port: 5000
+        - JWT Auth Guard
+        - Rate Limiting
+        - Helmet / CORS
+        - Request Routing"]
+    end
+
+    subgraph Messaging["Async Message Bus"]
+        RMQ["RabbitMQ
+        Port: 5672 / 15672"]
+    end
+
+    subgraph DB["Data Layer (PostgreSQL)"]
+        PG["PostgreSQL
+        Port: 5432
+        Database: fire_extinguisher_db"]
+        subgraph AuthSchema["auth_schema"]
+            T_USERS["users"]
+            T_RT["refresh_tokens"]
+        end
+        subgraph UserSchema["user_schema"]
+            T_UP["user_profiles"]
+        end
+        subgraph ExSchema["extinguisher_schema"]
+            T_FE["fire_extinguishers"]
+        end
+        subgraph InSchema["inspection_schema"]
+            T_INS["inspections"]
+        end
+        subgraph MnSchema["maintenance_schema"]
+            T_ML["maintenance_logs"]
+        end
+        subgraph RepSchema["reporting_schema"]
+            T_REP["reports"]
+        end
+        subgraph NotSchema["notification_schema"]
+            T_NOT["notifications"]
+        end
+    end
+
+    subgraph Microservices["Microservices (NestJS + TypeORM)"]
+        AUTH["Auth Service
+        Port: 5001
+        - Register / Login / JWT / Refresh"]
+        USER["User Service
+        Port: 5002
+        - CRUD Users / Profiles"]
+        EXTINGUISHER["Extinguisher Service
+        Port: 5003
+        - CRUD Extinguishers"]
+        INSPECTION["Inspection Service
+        Port: 5004
+        - Schedule / Complete Inspections"]
+        MAINTENANCE["Maintenance Service
+        Port: 5005
+        - Log Maintenance Actions"]
+        REPORTING["Reporting Service
+        Port: 5006
+        - Dashboard Stats / PDF / CSV"]
+        NOTIFICATION["Notification Service
+        Port: 5007
+        - Email / Alerts / Event Consumers"]
+    end
+
+    Browser -- "HTTP" --> FE
+    FE -- "REST API Bearer JWT" --> APIGW
+    APIGW -- "HTTP Proxy" --> AUTH
+    APIGW -- "HTTP Proxy" --> USER
+    APIGW -- "HTTP Proxy" --> EXTINGUISHER
+    APIGW -- "HTTP Proxy" --> INSPECTION
+    APIGW -- "HTTP Proxy" --> MAINTENANCE
+    APIGW -- "HTTP Proxy" --> REPORTING
+    APIGW -- "HTTP Proxy" --> NOTIFICATION
+
+    AUTH -- "Emit Events" --> RMQ
+    INSPECTION -- "Emit Events" --> RMQ
+    MAINTENANCE -- "Emit Events" --> RMQ
+    EXTINGUISHER -- "Emit Events" --> RMQ
+
+    RMQ -- "Consume Events" --> NOTIFICATION
+
+    AUTH -- "TypeORM" --> T_USERS
+    AUTH -- "TypeORM" --> T_RT
+    USER -- "TypeORM" --> T_UP
+    EXTINGUISHER -- "TypeORM" --> T_FE
+    INSPECTION -- "TypeORM" --> T_INS
+    MAINTENANCE -- "TypeORM" --> T_ML
+    REPORTING -- "TypeORM" --> T_REP
+    NOTIFICATION -- "TypeORM" --> T_NOT
+
+    style Client fill:#e1f5fe,stroke:#0277bd
+    style Gateway fill:#fff3e0,stroke:#ef6c00
+    style Microservices fill:#e8f5e9,stroke:#2e7d32
+    style Messaging fill:#f3e5f5,stroke:#7b1fa2
+    style DB fill:#fce4ec,stroke:#c2185b

@@ -1,0 +1,259 @@
+version: '3.8'
+
+services:
+  # Infrastructure Services
+  postgres:
+    image: postgres:15-alpine
+    container_name: fire_extinguisher_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: fire_extinguisher_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - microservices-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: fire_extinguisher_rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - microservices-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_running"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Application Services
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: api_gateway
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - JWT_SECRET=your_jwt_secret_key_here
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+      - AUTH_SERVICE_URL=http://auth-service:5001
+      - USER_SERVICE_URL=http://user-service:5002
+      - EXTINGUISHER_SERVICE_URL=http://extinguisher-service:5003
+      - INSPECTION_SERVICE_URL=http://inspection-service:5004
+      - MAINTENANCE_SERVICE_URL=http://maintenance-service:5005
+      - REPORTING_SERVICE_URL=http://reporting-service:5006
+      - NOTIFICATION_SERVICE_URL=http://notification-service:5007
+      - THROTTLE_TTL=60
+      - THROTTLE_LIMIT=100
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - microservices-network
+
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: auth_service
+    ports:
+      - "5001:5001"
+    environment:
+      - PORT=5001
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=fire_extinguisher_db
+      - DB_SCHEMA=auth_schema
+      - JWT_SECRET=your_jwt_secret_key_here
+      - JWT_EXPIRATION=1h
+      - JWT_REFRESH_EXPIRATION=7d
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - microservices-network
+
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    container_name: user_service
+    ports:
+      - "5002:5002"
+    environment:
+      - PORT=5002
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=fire_extinguisher_db
+      - DB_SCHEMA=user_schema
+      - JWT_SECRET=your_jwt_secret_key_here
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - microservices-network
+
+  extinguisher-service:
+    build:
+      context: ./extinguisher-service
+      dockerfile: Dockerfile
+    container_name: extinguisher_service
+    ports:
+      - "5003:5003"
+    environment:
+      - PORT=5003
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=fire_extinguisher_db
+      - DB_SCHEMA=extinguisher_schema
+      - JWT_SECRET=your_jwt_secret_key_here
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - microservices-network
+
+  inspection-service:
+    build:
+      context: ./inspection-service
+      dockerfile: Dockerfile
+    container_name: inspection_service
+    ports:
+      - "5004:5004"
+    environment:
+      - PORT=5004
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=fire_extinguisher_db
+      - DB_SCHEMA=inspection_schema
+      - JWT_SECRET=your_jwt_secret_key_here
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - microservices-network
+
+  maintenance-service:
+    build:
+      context: ./maintenance-service
+      dockerfile: Dockerfile
+    container_name: maintenance_service
+    ports:
+      - "5005:5005"
+    environment:
+      - PORT=5005
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=fire_extinguisher_db
+      - DB_SCHEMA=maintenance_schema
+      - JWT_SECRET=your_jwt_secret_key_here
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - microservices-network
+
+  reporting-service:
+    build:
+      context: ./reporting-service
+      dockerfile: Dockerfile
+    container_name: reporting_service
+    ports:
+      - "5006:5006"
+    environment:
+      - PORT=5006
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=fire_extinguisher_db
+      - DB_SCHEMA=reporting_schema
+      - JWT_SECRET=your_jwt_secret_key_here
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - microservices-network
+
+  notification-service:
+    build:
+      context: ./notification-service
+      dockerfile: Dockerfile
+    container_name: notification_service
+    ports:
+      - "5007:5007"
+    environment:
+      - PORT=5007
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=fire_extinguisher_db
+      - DB_SCHEMA=notification_schema
+      - JWT_SECRET=your_jwt_secret_key_here
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+      - SMTP_HOST=smtp.gmail.com
+      - SMTP_PORT=587
+      - SMTP_USER=your_email@gmail.com
+      - SMTP_PASS=your_app_password
+      - SMTP_FROM=noreply@fireextinguisher.com
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - microservices-network
+
+volumes:
+  postgres_data:
+  rabbitmq_data:
+
+networks:
+  microservices-network:
+    driver: bridge

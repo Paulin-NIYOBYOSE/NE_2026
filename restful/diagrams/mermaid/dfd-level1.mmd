@@ -1,0 +1,102 @@
+graph TB
+    subgraph EE["External Entity"]
+        CLIENT["Client (React SPA)"]
+    end
+
+    subgraph GW["Process 1.0 — API Gateway"]
+        P1["1.1 Authenticate Request
+(JWT Validation, Rate Limit)"]
+        P2["1.2 Route Request
+(HTTP Proxy to Services)"]
+    end
+
+    subgraph AUTH_P["Process 2.0 — Auth Service"]
+        P3["2.1 Register / Login"]
+        P4["2.2 Generate JWT + Refresh Token"]
+        P5["2.3 Emit user.created Event"]
+    end
+
+    subgraph USER_P["Process 3.0 — User Service"]
+        P6["3.1 CRUD User Profiles"]
+    end
+
+    subgraph EXT_P["Process 4.0 — Extinguisher Service"]
+        P7["4.1 CRUD Fire Extinguishers"]
+        P8["4.2 Check Expiry / Status"]
+        P9["4.3 Emit extinguisher.status_changed"]
+    end
+
+    subgraph INSP_P["Process 5.0 — Inspection Service"]
+        P10["5.1 Schedule Inspection"]
+        P11["5.2 Complete Inspection"]
+        P12["5.3 Emit inspection.scheduled / completed"]
+    end
+
+    subgraph MAINT_P["Process 6.0 — Maintenance Service"]
+        P13["6.1 Log Maintenance"]
+        P14["6.2 Emit maintenance.logged"]
+    end
+
+    subgraph REP_P["Process 7.0 — Reporting Service"]
+        P15["7.1 Aggregate Statistics"]
+        P16["7.2 Generate PDF / CSV Report"]
+    end
+
+    subgraph NOTIF_P["Process 8.0 — Notification Service"]
+        P17["8.1 Consume Events from RabbitMQ"]
+        P18["8.2 Send Email / System Notifications"]
+    end
+
+    subgraph DATA["Data Stores"]
+        DB1["auth_schema.users"]
+        DB2["auth_schema.refresh_tokens"]
+        DB3["user_schema.user_profiles"]
+        DB4["extinguisher_schema.fire_extinguishers"]
+        DB5["inspection_schema.inspections"]
+        DB6["maintenance_schema.maintenance_logs"]
+        DB7["reporting_schema.reports"]
+        DB8["notification_schema.notifications"]
+        RMQ["RabbitMQ Event Queue"]
+        SMTP["SMTP Server"]
+    end
+
+    CLIENT -- "Login Register" --> P1
+    CLIENT -- "Bearer Token" --> P2
+
+    P1 -- "Valid Token" --> P2
+    P2 -- "Auth Requests" --> P3
+    P2 -- "User Requests" --> P6
+    P2 -- "Extinguisher Requests" --> P7
+    P2 -- "Inspection Requests" --> P10
+    P2 -- "Maintenance Requests" --> P13
+    P2 -- "Report Requests" --> P15
+    P2 -- "Notification Requests" --> P17
+
+    P3 -- "Read Write" --> DB1
+    P3 -- "Store Token" --> DB2
+    P3 -- "Event" --> P5
+    P5 -- "Publish" --> RMQ
+
+    P6 -- "Read Write" --> DB3
+
+    P7 -- "Read Write" --> DB4
+    P7 -- "Event" --> P9
+    P9 -- "Publish" --> RMQ
+
+    P10 -- "Read Write" --> DB5
+    P10 -- "Event" --> P12
+    P12 -- "Publish" --> RMQ
+
+    P13 -- "Read Write" --> DB6
+    P13 -- "Event" --> P14
+    P14 -- "Publish" --> RMQ
+
+    P15 -- "Read Write" --> DB7
+
+    RMQ -- "Consume" --> P17
+    P17 -- "Read Write" --> DB8
+    P18 -- "Send Email" --> SMTP
+
+    style CLIENT fill:#e3f2fd,stroke:#1565c0
+    style RMQ fill:#f3e5f5,stroke:#7b1fa2
+    style SMTP fill:#fff3e0,stroke:#ef6c00

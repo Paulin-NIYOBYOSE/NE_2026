@@ -1,0 +1,68 @@
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Build outputs
+dist/
+build/
+out/
+*.tsbuildinfo
+
+# Logs
+*.log
+logs/
+log/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+.env.development
+.env.test
+.env.production
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Cache
+.cache/
+.turbo/
+.eslintcache
+.parcel-cache
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Test
+*.spec.ts
+*.test.ts
+*.spec.js
+*.test.js
+
+# AI / Assistant artifacts
+.windsurf/
+*.cursor*
+*cursor*
+*ai-*
+*assistant*
+*cascade*
+
+# Frontend build
+restful/frontend/dist/
+restful/frontend/node_modules/
+
+# Backend build artifacts per service
+restful/backend/*/dist/
+restful/backend/*/node_modules/
+
+# Service logs
+restful/backend/*/service.log

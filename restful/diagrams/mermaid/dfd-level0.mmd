@@ -1,0 +1,35 @@
+graph LR
+    subgraph External["External Entities"]
+        A["Admin / Inspector / Technician / User
+        (Frontend Browser)"]
+    end
+
+    subgraph System["Fire Extinguisher Management System"]
+        C["API Gateway +
+        Microservices
+        (Auth, User, Extinguisher,
+        Inspection, Maintenance,
+        Reporting, Notification)"]
+    end
+
+    subgraph External2["External Systems"]
+        D["PostgreSQL Database"]
+        E["RabbitMQ Message Bus"]
+        F["Email SMTP Server"]
+    end
+
+    A -- "1. Login Register Request" --> C
+    C -- "2. JWT Token + User Data" --> A
+    A -- "3. CRUD Operations Extinguisher Inspection Maintenance" --> C
+    C -- "4. Dashboard Stats Reports Notifications" --> A
+    A -- "5. Profile Update Password Reset" --> C
+
+    C -- "6. Read Write Data" --> D
+    C -- "7. Publish Consume Events" --> E
+    C -- "8. Send Email Notifications" --> F
+
+    style A fill:#e3f2fd,stroke:#1565c0
+    style C fill:#e8f5e9,stroke:#2e7d32
+    style D fill:#fce4ec,stroke:#c2185b
+    style E fill:#f3e5f5,stroke:#7b1fa2
+    style F fill:#fff3e0,stroke:#ef6c00

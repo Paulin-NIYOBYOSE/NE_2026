@@ -1,0 +1,373 @@
+// Use DBML to define your database structure
+// Docs: https://dbml.dbdiagram.io/docs
+// Fire Extinguisher Management System — Microservices Database Design
+// Each schema belongs to a separate microservice for data isolation
+
+// ============================================================================
+// AUTH SERVICE SCHEMA (auth_schema)
+// ============================================================================
+
+Table auth_schema.users {
+  id uuid [primary key, note: 'Auto-generated UUID']
+  email varchar [not null, unique, note: 'User login email']
+  password varchar [not null, note: 'Bcrypt hashed password']
+  first_name varchar [not null]
+  last_name varchar [not null]
+  role user_role [not null, default: 'user']
+  is_active boolean [not null, default: true]
+  phone varchar [null]
+  address varchar [null]
+  department varchar [null]
+  created_at timestamp [not null, default: 'now()']
+  updated_at timestamp [not null, default: 'now()']
+
+  indexes {
+    (email) [unique, name: 'idx_auth_users_email']
+    (role) [name: 'idx_auth_users_role']
+    (is_active) [name: 'idx_auth_users_active']
+  }
+
+  note: 'Master user identity managed by Auth Service'
+}
+
+Enum user_role {
+  admin
+  inspector
+  technician
+  user
+}
+
+Table auth_schema.refresh_tokens {
+  id uuid [primary key]
+  user_id uuid [not null, note: 'References auth_schema.users.id']
+  token varchar [not null, note: 'Refresh token hash']
+  expires_at timestamp [not null]
+  is_revoked boolean [not null, default: false]
+  created_at timestamp [not null, default: 'now()']
+
+  indexes {
+    (user_id) [name: 'idx_auth_rt_user_id']
+    (token) [name: 'idx_auth_rt_token']
+  }
+
+  note: 'JWT refresh token storage for session management'
+}
+
+// ============================================================================
+// USER SERVICE SCHEMA (user_schema)
+// ============================================================================
+
+Table user_schema.user_profiles {
+  id uuid [primary key, note: 'Same UUID as auth_schema.users.id (synced via event)']
+  email varchar [not null]
+  first_name varchar [not null]
+  last_name varchar [not null]
+  phone varchar [null]
+  address varchar [null]
+  department varchar [null]
+  role varchar [not null, default: 'user']
+  is_active boolean [not null, default: true]
+  created_at timestamp [not null, default: 'now()']
+  updated_at timestamp [not null, default: 'now()']
+
+  indexes {
+    (email) [name: 'idx_user_profiles_email']
+  }
+
+  note: 'Denormalized user profile replicated via RabbitMQ events from Auth Service'
+}
+
+// ============================================================================
+// EXTINGUISHER SERVICE SCHEMA (extinguisher_schema)
+// ============================================================================
+
+Table extinguisher_schema.fire_extinguishers {
+  id uuid [primary key]
+  serial_number varchar [not null, unique, note: 'Unique physical serial number']
+  type extinguisher_type [not null]
+  manufacturer varchar [not null]
+  manufacturing_date date [not null]
+  expiry_date date [not null]
+  last_inspection_date date [null]
+  next_inspection_date date [null]
+  location varchar [not null, note: 'Physical building/room location']
+  building varchar [null]
+  floor varchar [null]
+  status extinguisher_status [not null, default: 'active']
+  weight decimal(5,2) [not null, note: 'Weight in kilograms']
+  notes text [null]
+  created_at timestamp [not null, default: 'now()']
+  updated_at timestamp [not null, default: 'now()']
+
+  indexes {
+    (serial_number) [unique, name: 'idx_fe_serial']
+    (status) [name: 'idx_fe_status']
+    (expiry_date) [name: 'idx_fe_expiry']
+    (type) [name: 'idx_fe_type']
+    (location) [name: 'idx_fe_location']
+  }
+
+  note: 'Core fire safety equipment tracking'
+}
+
+Enum extinguisher_type {
+  water
+  foam
+  co2
+  dry_powder
+  wet_chemical
+}
+
+Enum extinguisher_status {
+  active
+  expired
+  maintenance
+  decommissioned
+}
+
+// ============================================================================
+// INSPECTION SERVICE SCHEMA (inspection_schema)
+// ============================================================================
+
+Table inspection_schema.inspections {
+  id uuid [primary key]
+  extinguisher_id uuid [not null, note: 'Logical FK to extinguisher_schema.fire_extinguishers.id']
+  inspector_id uuid [not null, note: 'Logical FK to auth_schema.users.id']
+  scheduled_date timestamp [not null]
+  completed_date timestamp [null]
+  status inspection_status [not null, default: 'scheduled']
+  result inspection_result [null]
+  notes text [null]
+  findings text [null]
+  pressure_check boolean [not null, default: false]
+  seal_intact boolean [not null, default: false]
+  pin_present boolean [not null, default: false]
+  hose_condition boolean [not null, default: false]
+  label_readable boolean [not null, default: false]
+  created_at timestamp [not null, default: 'now()']
+  updated_at timestamp [not null, default: 'now()']
+
+  indexes {
+    (extinguisher_id) [name: 'idx_inspection_ext_id']
+    (inspector_id) [name: 'idx_inspection_inspector']
+    (status) [name: 'idx_inspection_status']
+    (scheduled_date) [name: 'idx_inspection_scheduled']
+  }
+
+  note: 'Scheduled and completed safety inspections'
+}
+
+Enum inspection_status {
+  scheduled
+  in_progress
+  completed
+  cancelled
+  overdue
+}
+
+Enum inspection_result {
+  pass
+  fail
+  needs_maintenance
+}
+
+// ============================================================================
+// MAINTENANCE SERVICE SCHEMA (maintenance_schema)
+// ============================================================================
+
+Table maintenance_schema.maintenance_logs {
+  id uuid [primary key]
+  extinguisher_id uuid [not null, note: 'Logical FK to extinguisher_schema.fire_extinguishers.id']
+  technician_id uuid [not null, note: 'Logical FK to auth_schema.users.id']
+  inspection_id uuid [null, note: 'Optional logical FK to inspection_schema.inspections.id']
+  maintenance_type maintenance_type_enum [not null]
+  condition_before maintenance_condition [not null]
+  condition_after maintenance_condition [not null]
+  description text [not null]
+  parts_replaced varchar [null]
+  cost decimal(10,2) [null]
+  maintenance_date date [not null]
+  next_maintenance_date date [null]
+  created_at timestamp [not null, default: 'now()']
+  updated_at timestamp [not null, default: 'now()']
+
+  indexes {
+    (extinguisher_id) [name: 'idx_maint_ext_id']
+    (technician_id) [name: 'idx_maint_tech']
+    (inspection_id) [name: 'idx_maint_inspection']
+    (maintenance_type) [name: 'idx_maint_type']
+    (maintenance_date) [name: 'idx_maint_date']
+  }
+
+  note: 'Maintenance actions performed on extinguishers'
+}
+
+Enum maintenance_type_enum {
+  refill
+  repair
+  replacement
+  pressure_test
+  general_service
+}
+
+Enum maintenance_condition {
+  good
+  fair
+  poor
+  critical
+}
+
+// ============================================================================
+// REPORTING SERVICE SCHEMA (reporting_schema)
+// ============================================================================
+
+Table reporting_schema.reports {
+  id uuid [primary key]
+  title varchar [not null]
+  type report_type [not null]
+  format report_format [not null, default: 'json']
+  data jsonb [null, note: 'Aggregated report payload']
+  file_path varchar [null, note: 'Path to generated PDF/CSV file']
+  generated_by uuid [not null, note: 'Logical FK to auth_schema.users.id']
+  period_start date [null]
+  period_end date [null]
+  created_at timestamp [not null, default: 'now()']
+
+  indexes {
+    (generated_by) [name: 'idx_report_generator']
+    (type) [name: 'idx_report_type']
+    (created_at) [name: 'idx_report_created']
+  }
+
+  note: 'Generated compliance and analytics reports'
+}
+
+Enum report_type {
+  daily
+  monthly
+  yearly
+  expired_extinguishers
+  maintenance_history
+  inspection_summary
+}
+
+Enum report_format {
+  json
+  pdf
+  csv
+}
+
+// ============================================================================
+// NOTIFICATION SERVICE SCHEMA (notification_schema)
+// ============================================================================
+
+Table notification_schema.notifications {
+  id uuid [primary key]
+  type notification_type [not null]
+  recipient varchar [not null, note: 'Email address or user identifier']
+  subject varchar [not null]
+  body text [not null]
+  status notification_status [not null, default: 'pending']
+  retry_count integer [not null, default: 0]
+  error_message text [null]
+  event_type varchar [null, note: 'Originating event: user.created, inspection.scheduled, etc.']
+  created_at timestamp [not null, default: 'now()']
+  sent_at timestamp [null]
+
+  indexes {
+    (recipient) [name: 'idx_notif_recipient']
+    (status) [name: 'idx_notif_status']
+    (type) [name: 'idx_notif_type']
+    (event_type) [name: 'idx_notif_event']
+    (created_at) [name: 'idx_notif_created']
+  }
+
+  note: 'Email and system notifications triggered by RabbitMQ events'
+}
+
+Enum notification_type {
+  email
+  system
+  alert
+}
+
+Enum notification_status {
+  pending
+  sent
+  failed
+  retrying
+}
+
+// ============================================================================
+// CROSS-SERVICE REFERENCES (Logical — enforced at application level)
+// ============================================================================
+
+// Auth Service internal
+Ref: auth_schema.refresh_tokens.user_id > auth_schema.users.id
+
+// Auth -> User Profile sync via RabbitMQ
+Ref: user_schema.user_profiles.id - auth_schema.users.id
+
+// Extinguisher -> Inspections (1 extinguisher can have many inspections)
+Ref: inspection_schema.inspections.extinguisher_id > extinguisher_schema.fire_extinguishers.id
+
+// Extinguisher -> Maintenance Logs (1 extinguisher can have many maintenance logs)
+Ref: maintenance_schema.maintenance_logs.extinguisher_id > extinguisher_schema.fire_extinguishers.id
+
+// Inspection -> Maintenance (1 inspection can trigger 1 maintenance log)
+Ref: maintenance_schema.maintenance_logs.inspection_id - inspection_schema.inspections.id
+
+// User -> Inspections (1 inspector can perform many inspections)
+Ref: inspection_schema.inspections.inspector_id > auth_schema.users.id
+
+// User -> Maintenance (1 technician can perform many maintenance actions)
+Ref: maintenance_schema.maintenance_logs.technician_id > auth_schema.users.id
+
+// User -> Reports (1 user can generate many reports)
+Ref: reporting_schema.reports.generated_by > auth_schema.users.id
+
+// ============================================================================
+// SAMPLE DATA RECORDS
+// ============================================================================
+
+Records auth_schema.users(id, email, first_name, last_name, role, is_active) {
+  '23c5c87f-83a3-48b5-8cb0-99373c49a340', 'admin@test.com', 'System', 'Admin', 'admin', true
+  'a1b2c3d4-e5f6-7890-abcd-ef1234567890', 'inspector@test.com', 'John', 'Inspector', 'inspector', true
+  'b2c3d4e5-f6a7-8901-bcde-f12345678901', 'tech@test.com', 'Jane', 'Technician', 'technician', true
+  'c3d4e5f6-a7b8-9012-cdef-123456789012', 'user@test.com', 'Alice', 'User', 'user', true
+}
+
+Records auth_schema.refresh_tokens(id, user_id, token, expires_at, is_revoked) {
+  'f1e2d3c4-b5a6-7890-1234-567890abcdef', '23c5c87f-83a3-48b5-8cb0-99373c49a340', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...', '2026-07-01 00:00:00', false
+}
+
+Records user_schema.user_profiles(id, email, first_name, last_name, role, is_active, department) {
+  '23c5c87f-83a3-48b5-8cb0-99373c49a340', 'admin@test.com', 'System', 'Admin', 'admin', true, 'IT Security'
+  'a1b2c3d4-e5f6-7890-abcd-ef1234567890', 'inspector@test.com', 'John', 'Inspector', 'inspector', true, 'Safety'
+  'b2c3d4e5-f6a7-8901-bcde-f12345678901', 'tech@test.com', 'Jane', 'Technician', 'technician', true, 'Maintenance'
+}
+
+Records extinguisher_schema.fire_extinguishers(id, serial_number, type, manufacturer, manufacturing_date, expiry_date, location, building, floor, status, weight) {
+  'e1f2a3b4-c5d6-7890-1234-567890abcdef', 'FE-2024-001', 'co2', 'FireGuard Inc.', '2024-01-15', '2029-01-15', 'Building A, Floor 2, Room 201', 'Building A', '2', 'active', 5.00
+  'f2a3b4c5-d6e7-8901-2345-678901abcdef', 'FE-2024-002', 'dry_powder', 'SafetyFirst Ltd.', '2023-06-20', '2028-06-20', 'Building B, Floor 1, Lobby', 'Building B', '1', 'active', 4.50
+  'a3b4c5d6-e7f8-9012-3456-789012abcdef', 'FE-2023-099', 'water', 'OldStock Corp.', '2020-03-10', '2025-03-10', 'Warehouse C, Section 3', 'Warehouse C', '0', 'expired', 9.00
+}
+
+Records inspection_schema.inspections(id, extinguisher_id, inspector_id, scheduled_date, status, result, notes) {
+  'b4c5d6e7-f8a9-0123-4567-890123abcdef', 'e1f2a3b4-c5d6-7890-1234-567890abcdef', 'a1b2c3d4-e5f6-7890-abcd-ef1234567890', '2026-06-15 09:00:00', 'scheduled', null, 'Quarterly routine check'
+  'c5d6e7f8-a9b0-1234-5678-901234abcdef', 'f2a3b4c5-d6e7-8901-2345-678901abcdef', 'a1b2c3d4-e5f6-7890-abcd-ef1234567890', '2026-05-01 10:00:00', 'completed', 'pass', 'All checks passed'
+}
+
+Records maintenance_schema.maintenance_logs(id, extinguisher_id, technician_id, maintenance_type, condition_before, condition_after, description, cost, maintenance_date) {
+  'd6e7f8a9-b0c1-2345-6789-012345abcdef', 'e1f2a3b4-c5d6-7890-1234-567890abcdef', 'b2c3d4e5-f6a7-8901-bcde-f12345678901', 'general_service', 'fair', 'good', 'Pressure test and refill completed', 75.50, '2026-04-20'
+}
+
+Records reporting_schema.reports(id, title, type, format, generated_by) {
+  'e7f8a9b0-c1d2-3456-7890-123456abcdef', 'Monthly Compliance Report - June 2026', 'monthly', 'pdf', '23c5c87f-83a3-48b5-8cb0-99373c49a340'
+  'f8a9b0c1-d2e3-4567-8901-234567abcdef', 'Expired Extinguishers Audit', 'expired_extinguishers', 'csv', '23c5c87f-83a3-48b5-8cb0-99373c49a340'
+}
+
+Records notification_schema.notifications(id, type, recipient, subject, body, status, event_type) {
+  'a9b0c1d2-e3f4-5678-9012-345678abcdef', 'email', 'user@test.com', 'Welcome to TZW LTD Fire Safety System', 'Your account has been created successfully.', 'sent', 'user.created'
+  'b0c1d2e3-f4a5-6789-0123-456789abcdef', 'system', 'admin@test.com', 'Inspection Overdue Alert', 'Extinguisher FE-2023-099 inspection is overdue.', 'pending', 'inspection.overdue'
+}

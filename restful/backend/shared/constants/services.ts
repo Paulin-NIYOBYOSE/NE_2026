@@ -1,0 +1,30 @@
+export const SERVICES = {
+  AUTH: 'AUTH_SERVICE',
+  USER: 'USER_SERVICE',
+  EXTINGUISHER: 'EXTINGUISHER_SERVICE',
+  INSPECTION: 'INSPECTION_SERVICE',
+  MAINTENANCE: 'MAINTENANCE_SERVICE',
+  REPORTING: 'REPORTING_SERVICE',
+  NOTIFICATION: 'NOTIFICATION_SERVICE',
+};
+
+export const RABBITMQ_QUEUES = {
+  AUTH: 'auth_queue',
+  USER: 'user_queue',
+  EXTINGUISHER: 'extinguisher_queue',
+  INSPECTION: 'inspection_queue',
+  MAINTENANCE: 'maintenance_queue',
+  REPORTING: 'reporting_queue',
+  NOTIFICATION: 'notification_queue',
+};
+
+export const SERVICE_PORTS = {
+  API_GATEWAY: 5000,
+  AUTH: 5001,
+  USER: 5002,
+  EXTINGUISHER: 5003,
+  INSPECTION: 5004,
+  MAINTENANCE: 5005,
+  REPORTING: 5006,
+  NOTIFICATION: 5007,
+};

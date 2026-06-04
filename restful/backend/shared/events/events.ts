@@ -1,0 +1,16 @@
+export const EVENTS = {
+  USER_CREATED: 'user.created',
+  USER_UPDATED: 'user.updated',
+  USER_DELETED: 'user.deleted',
+  INSPECTION_SCHEDULED: 'inspection.scheduled',
+  INSPECTION_COMPLETED: 'inspection.completed',
+  INSPECTION_CANCELLED: 'inspection.cancelled',
+  MAINTENANCE_LOGGED: 'maintenance.logged',
+  MAINTENANCE_COMPLETED: 'maintenance.completed',
+  EXTINGUISHER_REGISTERED: 'extinguisher.registered',
+  EXTINGUISHER_EXPIRED: 'extinguisher.expired',
+  EXTINGUISHER_STATUS_CHANGED: 'extinguisher.status_changed',
+  REPORT_GENERATED: 'report.generated',
+  NOTIFICATION_SENT: 'notification.sent',
+  PASSWORD_RESET_REQUESTED: 'password.reset.requested',
+};
