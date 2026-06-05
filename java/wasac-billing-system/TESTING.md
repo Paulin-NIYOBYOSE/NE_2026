@@ -225,7 +225,7 @@ total_amount       = 26,000 + 4,680 = 30,680 FRW
 ```
 
 A **BILL_GENERATED** notification is automatically inserted by PostgreSQL trigger:
-> *"Dear Alice Uwimana, Your June/2024 utility bill of 30680.00 FRW has been successfully processed."*
+> *"Dear Alice Uwimana, Your June/2024 utility bill of 30,680.00 FRW has been successfully processed."*
 
 ### 7b. Approve the Bill
 
@@ -291,7 +291,7 @@ A **BILL_GENERATED** notification is automatically inserted by PostgreSQL trigge
 ```
 
 > Bill status → **PAID**. PostgreSQL trigger fires a **PAYMENT_CONFIRMED** notification:
-> *"Dear Alice Uwimana, Your June/2024 utility bill of 30680.00 FRW has been fully paid. Thank you!"*
+> *"Dear Alice Uwimana, Your June/2024 utility bill of 30,680.00 FRW has been fully paid. Thank you!"*
 
 ---
 

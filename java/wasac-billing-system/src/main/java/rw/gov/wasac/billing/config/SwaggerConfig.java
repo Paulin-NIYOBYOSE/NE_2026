@@ -28,15 +28,6 @@ public class SwaggerConfig {
 
                     ---
 
-                    ## Quick Start — How to Authenticate
-
-                    1. Use the seeded admin account or register a new user:
-                       - `POST /api/auth/login` → body: `{ "email": "admin@wasac.rw", "password": "Admin@1234" }`
-                    2. Copy the `access_token` from the response.
-                    3. Click the **Authorize** button (top-right), enter: `Bearer <your-token>` → click **Authorize**.
-
-                    ---
-
                     ## Role-Based Access Summary
 
                     | Role | Responsibilities |
