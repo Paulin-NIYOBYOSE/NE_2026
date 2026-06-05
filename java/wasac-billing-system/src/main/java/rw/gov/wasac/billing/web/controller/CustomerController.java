@@ -53,6 +53,13 @@ public class CustomerController {
         return ResponseEntity.ok(ApiResponse.ok("Customer updated", customerService.updateCustomer(id, request)));
     }
 
+    @Operation(summary = "Approve customer account — activates billing access [ADMIN]")
+    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/{id}/approve")
+    public ResponseEntity<ApiResponse<CustomerResponse>> approve(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.ok("Customer approved and activated", customerService.approveCustomer(id)));
+    }
+
     @Operation(summary = "Deactivate customer [ADMIN]")
     @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/deactivate")

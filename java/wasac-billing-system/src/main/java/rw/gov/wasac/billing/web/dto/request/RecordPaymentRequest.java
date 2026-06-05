@@ -5,7 +5,7 @@ import lombok.*;
 import rw.gov.wasac.billing.domain.enums.PaymentMethod;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
 public class RecordPaymentRequest {
@@ -27,7 +27,7 @@ public class RecordPaymentRequest {
 
     @NotNull(message = "Payment date is required")
     @PastOrPresent(message = "Payment date cannot be in the future")
-    private LocalDateTime paymentDate;
+    private LocalDate paymentDate;
 
     @Size(max = 100, message = "Reference number must not exceed 100 characters")
     private String referenceNumber;

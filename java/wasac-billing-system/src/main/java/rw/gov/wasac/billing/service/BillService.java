@@ -24,6 +24,7 @@ public class BillService {
 
     private final BillRepository billRepository;
     private final CustomerRepository customerRepository;
+    private final CustomerService customerService;
     private final MeterReadingService meterReadingService;
     private final TariffService tariffService;
     private final TaxConfigService taxConfigService;
@@ -199,6 +200,7 @@ public class BillService {
     }
 
     public List<BillResponse> getMyBills(User user) {
+        customerService.getActiveCustomerForUser(user); // throws if INACTIVE or no profile
         return billRepository.findByCustomer_User_IdOrderByCreatedAtDesc(user.getId())
             .stream().map(this::toResponse).collect(Collectors.toList());
     }

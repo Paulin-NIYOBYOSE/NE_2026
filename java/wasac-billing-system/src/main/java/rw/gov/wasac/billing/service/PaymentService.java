@@ -21,6 +21,7 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final BillService billService;
     private final BillRepository billRepository;
+    private final CustomerService customerService;
 
     @Transactional
     public PaymentResponse recordPayment(RecordPaymentRequest request, User finance) {
@@ -81,11 +82,9 @@ public class PaymentService {
     }
 
     public List<PaymentResponse> getMyPayments(User user) {
-        return paymentRepository.findAll().stream()
-            .filter(p -> p.getBill().getCustomer().getUser() != null &&
-                p.getBill().getCustomer().getUser().getId().equals(user.getId()))
-            .map(this::toResponse)
-            .collect(Collectors.toList());
+        customerService.getActiveCustomerForUser(user); // throws if INACTIVE or no profile
+        return paymentRepository.findByBill_Customer_User_IdOrderByCreatedAtDesc(user.getId())
+            .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     public PaymentResponse toResponse(Payment p) {

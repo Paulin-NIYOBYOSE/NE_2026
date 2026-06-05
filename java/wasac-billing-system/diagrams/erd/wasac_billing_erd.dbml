@@ -48,26 +48,32 @@ Table role_requests {
 // ─────────────────────────────────────────
 
 Table customers {
-  id          bigserial    [pk, increment]
-  user_id     bigint       [unique, ref: - users.id, note: 'Optional link to user account']
-  full_names  varchar(255) [not null]
-  national_id varchar(16)  [not null, unique, note: 'Exactly 16-digit Rwanda NID']
-  email       varchar(255) [not null]
-  phone_number varchar(20) [not null]
-  address     varchar(500) [not null]
-  status      varchar(20)  [not null, default: 'ACTIVE', note: 'ACTIVE | INACTIVE']
-  created_at  timestamp    [default: `now()`]
-  updated_at  timestamp
+  id           bigserial    [pk, increment]
+  user_id      bigint       [unique, ref: - users.id, note: 'Linked at registration or by admin. One-to-one.']
+  full_names   varchar(255) [not null]
+  national_id  varchar(16)  [not null, unique, note: 'Exactly 16-digit Rwanda NID']
+  email        varchar(255) [not null, unique]
+  phone_number varchar(20)  [not null]
+  address      varchar(500) [not null]
+  status       varchar(20)  [not null, default: 'INACTIVE',
+                             note: 'INACTIVE after self-registration (pending admin approval). ACTIVE after PATCH /approve or when created by admin.']
+  created_at   timestamp    [default: `now()`]
+  updated_at   timestamp
 }
 
+// Registration flow:
+//   POST /api/auth/register → creates users row (ACTIVE) + customers row (INACTIVE, linked)
+//   PATCH /api/customers/{id}/approve → sets customers.status = ACTIVE → billing unlocked
+//   POST /api/customers (ADMIN) → creates customers row directly as ACTIVE
+
 Table meters {
-  id                bigserial   [pk, increment]
-  customer_id       bigint      [not null, ref: > customers.id]
-  meter_number      varchar(100)[not null, unique]
-  meter_type        varchar(20) [not null, note: 'WATER | ELECTRICITY']
-  installation_date date        [not null]
-  status            varchar(20) [not null, default: 'ACTIVE', note: 'ACTIVE | INACTIVE']
-  created_at        timestamp   [default: `now()`]
+  id                bigserial    [pk, increment]
+  customer_id       bigint       [not null, ref: > customers.id]
+  meter_number      varchar(100) [not null, unique]
+  meter_type        varchar(20)  [not null, note: 'WATER | ELECTRICITY']
+  installation_date date         [not null]
+  status            varchar(20)  [not null, default: 'ACTIVE', note: 'ACTIVE | INACTIVE']
+  created_at        timestamp    [default: `now()`]
   updated_at        timestamp
 }
 
@@ -76,16 +82,16 @@ Table meters {
 // ─────────────────────────────────────────
 
 Table meter_readings {
-  id               bigserial      [pk, increment]
-  meter_id         bigint         [not null, ref: > meters.id]
-  recorded_by      bigint         [not null, ref: > users.id, note: 'OPERATOR who captured reading']
-  previous_reading decimal(10,3)  [not null, note: 'Must be >= 0']
-  current_reading  decimal(10,3)  [not null, note: 'Must be > previous_reading']
-  consumption      decimal(10,3)  [not null, note: 'Computed: current - previous']
-  reading_date     date           [not null, note: 'Cannot be in the future']
-  reading_month    integer        [not null]
-  reading_year     integer        [not null]
-  created_at       timestamp      [default: `now()`]
+  id               bigserial     [pk, increment]
+  meter_id         bigint        [not null, ref: > meters.id]
+  recorded_by      bigint        [not null, ref: > users.id, note: 'OPERATOR user']
+  previous_reading decimal(10,3) [not null]
+  current_reading  decimal(10,3) [not null, note: 'Must be > previous_reading']
+  consumption      decimal(10,3) [not null, note: 'Computed: current - previous']
+  reading_date     date          [not null, note: 'Cannot be in the future']
+  reading_month    integer       [not null]
+  reading_year     integer       [not null]
+  created_at       timestamp     [default: `now()`]
 
   indexes {
     (meter_id, reading_month, reading_year) [unique, name: 'uq_reading_per_meter_month']
@@ -93,26 +99,29 @@ Table meter_readings {
 }
 
 // ─────────────────────────────────────────
-// TARIFF CONFIGURATION
+// TARIFF CONFIGURATION (versioned)
 // ─────────────────────────────────────────
 
 Table tariffs {
-  id             bigserial      [pk, increment]
-  meter_type     varchar(20)    [not null, note: 'WATER | ELECTRICITY']
-  tariff_type    varchar(20)    [not null, note: 'FLAT | TIER_BASED']
-  unit_price     decimal(10,4)  [note: 'Used for FLAT type only']
-  version        integer        [not null, default: 1]
-  effective_from date           [not null]
-  effective_to   date           [note: 'NULL = still active. Set to effectiveFrom-1 when superseded by a newer tariff']
-  is_current     boolean        [not null, default: true, note: 'Only one current per meter_type']
-  created_at     timestamp      [default: `now()`]
+  id             bigserial     [pk, increment]
+  meter_type     varchar(20)   [not null, note: 'WATER | ELECTRICITY']
+  tariff_type    varchar(20)   [not null, note: 'FLAT | TIER_BASED']
+  unit_price     decimal(10,4) [note: 'Used for FLAT type only']
+  version        integer       [not null, default: 1, note: 'Auto-incremented per meter_type']
+  effective_from date          [not null]
+  effective_to   date          [note: 'NULL = still active. Set to (new effectiveFrom - 1 day) when superseded.']
+  is_current     boolean       [not null, default: true, note: 'Only one current per meter_type']
+  created_by     bigint        [not null, ref: > users.id]
+  created_at     timestamp     [default: `now()`]
 }
+
+// Billing engine picks tariff by: effectiveFrom <= readingDate <= effectiveTo (NULL means open-ended)
 
 Table tariff_tiers {
   id         bigserial     [pk, increment]
   tariff_id  bigint        [not null, ref: > tariffs.id]
-  min_units  decimal(10,3) [not null, note: 'e.g. 0, 100, 200']
-  max_units  decimal(10,3) [note: 'NULL means unlimited (last tier)']
+  min_units  decimal(10,3) [not null]
+  max_units  decimal(10,3) [note: 'NULL = unlimited (last tier)']
   unit_price decimal(10,4) [not null]
 }
 
@@ -121,12 +130,12 @@ Table tariff_tiers {
 // ─────────────────────────────────────────
 
 Table tax_configs {
-  id         bigserial      [pk, increment]
-  name       varchar(100)   [not null, note: 'e.g. VAT']
-  rate       decimal(5,4)   [not null, note: 'e.g. 0.1800 = 18%']
-  applies_to varchar(20)    [not null, note: 'WATER | ELECTRICITY | ALL']
-  is_active  boolean        [not null, default: true]
-  created_at timestamp      [default: `now()`]
+  id         bigserial     [pk, increment]
+  name       varchar(100)  [not null, note: 'e.g. VAT']
+  rate       decimal(5,4)  [not null, note: '0.1800 = 18%']
+  applies_to varchar(20)   [not null, note: 'WATER | ELECTRICITY | ALL']
+  is_active  boolean       [not null, default: true]
+  created_at timestamp     [default: `now()`]
   updated_at timestamp
 }
 
@@ -145,38 +154,42 @@ Table penalties {
   name         varchar(100)  [not null]
   penalty_type varchar(20)   [not null, note: 'FIXED | PERCENTAGE']
   amount       decimal(10,2) [note: 'Used when penalty_type = FIXED']
-  rate         decimal(5,4)  [note: 'Used when penalty_type = PERCENTAGE; e.g. 0.05 = 5%']
-  days_overdue integer       [not null, note: '1-3650 days after due_date']
+  rate         decimal(5,4)  [note: 'Used when penalty_type = PERCENTAGE (e.g. 0.05 = 5%)']
+  days_overdue integer       [not null, note: 'Applied when bill is this many days past due_date']
   is_active    boolean       [not null, default: true]
   created_at   timestamp     [default: `now()`]
 }
 
 // ─────────────────────────────────────────
 // BILLING
+// Bill formula:
+//   subtotal = consumption_amount + service_charge
+//   tax_amount = subtotal × VAT rate
+//   total_amount = subtotal + tax_amount + penalty_amount
 // ─────────────────────────────────────────
 
 Table bills {
-  id                  bigserial      [pk, increment]
-  bill_reference      varchar(50)    [not null, unique, note: 'Format: WASAC-YYYY-MM-W/E-XXXXXXXX']
-  customer_id         bigint         [not null, ref: > customers.id]
-  meter_id            bigint         [not null, ref: > meters.id]
-  meter_reading_id    bigint         [not null, unique, ref: - meter_readings.id]
-  billing_month       integer        [not null]
-  billing_year        integer        [not null]
-  consumption         decimal(10,3)  [not null]
-  unit_price          decimal(10,4)  [not null]
-  consumption_amount  decimal(12,2)  [not null]
-  service_charge      decimal(12,2)  [not null, default: 0]
-  tax_amount          decimal(12,2)  [not null, default: 0]
-  penalty_amount      decimal(12,2)  [not null, default: 0]
-  total_amount        decimal(12,2)  [not null]
-  amount_paid         decimal(12,2)  [not null, default: 0]
-  outstanding_balance decimal(12,2)  [not null]
-  status              varchar(20)    [not null, default: 'PENDING', note: 'PENDING | APPROVED | PAID | REJECTED']
-  due_date            date           [not null]
-  approved_by         bigint         [ref: > users.id, note: 'ADMIN or FINANCE user']
+  id                  bigserial     [pk, increment]
+  bill_reference      varchar(50)   [not null, unique, note: 'Format: WASAC-YYYY-MM-W/E-XXXXXXXX']
+  customer_id         bigint        [not null, ref: > customers.id]
+  meter_id            bigint        [not null, ref: > meters.id]
+  meter_reading_id    bigint        [not null, unique, ref: - meter_readings.id]
+  billing_month       integer       [not null]
+  billing_year        integer       [not null]
+  consumption         decimal(10,3) [not null]
+  unit_price          decimal(10,4) [not null]
+  consumption_amount  decimal(12,2) [not null, note: 'consumption × unit_price']
+  service_charge      decimal(12,2) [not null, default: 0]
+  tax_amount          decimal(12,2) [not null, default: 0, note: '(consumption_amount + service_charge) × tax_rate']
+  penalty_amount      decimal(12,2) [not null, default: 0]
+  total_amount        decimal(12,2) [not null]
+  amount_paid         decimal(12,2) [not null, default: 0]
+  outstanding_balance decimal(12,2) [not null]
+  status              varchar(20)   [not null, default: 'PENDING', note: 'PENDING | APPROVED | PAID | REJECTED']
+  due_date            date          [not null, note: 'Generated = today + 30 days']
+  approved_by         bigint        [ref: > users.id]
   approved_at         timestamp
-  created_at          timestamp      [default: `now()`]
+  created_at          timestamp     [default: `now()`]
   updated_at          timestamp
 
   indexes {
@@ -194,20 +207,24 @@ Table payments {
   recorded_by      bigint        [not null, ref: > users.id, note: 'FINANCE user']
   amount_paid      decimal(12,2) [not null, note: 'Capped at outstanding_balance']
   payment_method   varchar(30)   [not null, note: 'CASH | MOBILE_MONEY | BANK_TRANSFER']
-  payment_date     timestamp     [not null, note: 'Cannot be in the future']
-  reference_number varchar(100)  [note: 'External transaction reference']
+  payment_date     timestamp     [not null]
+  reference_number varchar(100)
   created_at       timestamp     [default: `now()`]
 }
 
 // ─────────────────────────────────────────
-// NOTIFICATIONS (auto-inserted by triggers)
+// NOTIFICATIONS (auto-inserted by PostgreSQL triggers)
 // ─────────────────────────────────────────
 
 Table notifications {
   id                bigserial   [pk, increment]
   customer_id       bigint      [not null, ref: > customers.id]
-  message           text        [not null]
+  message           text        [not null, note: 'Dear <name>, Your <Month/Year> bill of <amount> FRW...']
   notification_type varchar(30) [not null, note: 'BILL_GENERATED | PAYMENT_CONFIRMED']
   is_read           boolean     [not null, default: false]
   created_at        timestamp   [default: `now()`]
 }
+
+// Triggers:
+//   trg_notify_on_bill_insert   — AFTER INSERT ON bills    → inserts BILL_GENERATED
+//   trg_notify_on_full_payment  — AFTER UPDATE ON bills    → inserts PAYMENT_CONFIRMED when outstanding_balance drops to 0

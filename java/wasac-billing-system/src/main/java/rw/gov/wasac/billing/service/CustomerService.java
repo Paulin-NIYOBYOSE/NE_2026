@@ -64,10 +64,31 @@ public class CustomerService {
     }
 
     @Transactional
+    public CustomerResponse approveCustomer(Long id) {
+        Customer customer = findById(id);
+        if (customer.getStatus() == UserStatus.ACTIVE) {
+            throw new BusinessException("Customer is already active");
+        }
+        customer.setStatus(UserStatus.ACTIVE);
+        return toResponse(customerRepository.save(customer));
+    }
+
+    @Transactional
     public void deactivateCustomer(Long id) {
         Customer customer = findById(id);
         customer.setStatus(UserStatus.INACTIVE);
         customerRepository.save(customer);
+    }
+
+    // Used by billing/payment/notification services to enforce INACTIVE guard
+    public Customer getActiveCustomerForUser(User user) {
+        Customer customer = customerRepository.findByUser(user)
+            .orElseThrow(() -> new ResourceNotFoundException("No customer profile linked to your account"));
+        if (customer.getStatus() != UserStatus.ACTIVE) {
+            throw new BusinessException(
+                "Your account is pending admin approval. Contact WASAC to activate your account.");
+        }
+        return customer;
     }
 
     public Customer findById(Long id) {

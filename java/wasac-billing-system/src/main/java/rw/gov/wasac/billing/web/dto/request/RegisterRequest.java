@@ -22,6 +22,14 @@ public class RegisterRequest {
     )
     private String phoneNumber;
 
+    @NotBlank(message = "National ID is required")
+    @Pattern(regexp = "^[0-9]{16}$", message = "National ID must be exactly 16 digits")
+    private String nationalId;
+
+    @NotBlank(message = "Address is required")
+    @Size(min = 5, max = 500, message = "Address must be between 5 and 500 characters")
+    private String address;
+
     @NotBlank(message = "Password is required")
     @Size(min = 6, max = 100, message = "Password must be 6–100 characters")
     @Pattern(

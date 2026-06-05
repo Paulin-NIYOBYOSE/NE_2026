@@ -17,10 +17,10 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final CustomerRepository customerRepository;
+    private final CustomerService customerService;
 
     public List<NotificationResponse> getMyNotifications(User user) {
-        Customer customer = customerRepository.findByUser(user)
-            .orElseThrow(() -> new ResourceNotFoundException("No customer profile linked to your account"));
+        Customer customer = customerService.getActiveCustomerForUser(user);
         return notificationRepository.findByCustomerOrderByCreatedAtDesc(customer)
             .stream().map(this::toResponse).collect(Collectors.toList());
     }
@@ -29,8 +29,7 @@ public class NotificationService {
     public NotificationResponse markAsRead(Long id, User user) {
         Notification notif = notificationRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Notification", id));
-        Customer customer = customerRepository.findByUser(user)
-            .orElseThrow(() -> new ResourceNotFoundException("No customer profile linked to your account"));
+        Customer customer = customerService.getActiveCustomerForUser(user);
         if (!notif.getCustomer().getId().equals(customer.getId())) {
             throw new rw.gov.wasac.billing.exception.BusinessException("You can only mark your own notifications as read");
         }

@@ -5,6 +5,7 @@ import lombok.*;
 import rw.gov.wasac.billing.domain.enums.PaymentMethod;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
@@ -28,7 +29,7 @@ public class Payment {
     private PaymentMethod paymentMethod;
 
     @Column(name = "payment_date", nullable = false)
-    private LocalDateTime paymentDate;
+    private LocalDate paymentDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "recorded_by", nullable = false)
