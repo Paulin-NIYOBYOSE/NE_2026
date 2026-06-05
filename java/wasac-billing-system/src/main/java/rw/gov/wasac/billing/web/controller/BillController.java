@@ -15,6 +15,7 @@ import rw.gov.wasac.billing.web.dto.request.GenerateBillRequest;
 import rw.gov.wasac.billing.web.dto.response.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/bills")
@@ -76,5 +77,13 @@ public class BillController {
     public ResponseEntity<ApiResponse<BillResponse>> reject(
         @PathVariable Long id, @AuthenticationPrincipal User actor) {
         return ResponseEntity.ok(ApiResponse.ok("Bill rejected", billService.rejectBill(id, actor)));
+    }
+
+    @Operation(summary = "Monthly billing report via stored procedure [ADMIN, FINANCE]")
+    @PreAuthorize("hasAnyRole('ADMIN','FINANCE')")
+    @GetMapping("/report")
+    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> report(
+        @RequestParam int year, @RequestParam int month) {
+        return ResponseEntity.ok(ApiResponse.ok(billService.getMonthlyReport(year, month)));
     }
 }

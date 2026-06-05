@@ -1,6 +1,7 @@
 package rw.gov.wasac.billing.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import rw.gov.wasac.billing.domain.entity.*;
@@ -15,6 +16,7 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -24,6 +26,7 @@ public class BillService {
 
     private final BillRepository billRepository;
     private final CustomerRepository customerRepository;
+    private final JdbcTemplate jdbcTemplate;
     private final CustomerService customerService;
     private final MeterReadingService meterReadingService;
     private final TariffService tariffService;
@@ -209,6 +212,11 @@ public class BillService {
     @Transactional
     public BillResponse generateBillFromReading(MeterReading reading) {
         return generateBill(new GenerateBillRequest(reading.getId()), null);
+    }
+
+    public List<Map<String, Object>> getMonthlyReport(int year, int month) {
+        return jdbcTemplate.queryForList(
+            "SELECT * FROM get_monthly_billing_report(?, ?)", year, month);
     }
 
     public BillResponse toResponse(Bill b) {
