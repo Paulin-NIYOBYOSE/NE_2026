@@ -1,0 +1,212 @@
+// ============================================================
+// WASAC Utility Billing System — ERD (DBML)
+// Paste this at: https://dbdiagram.io
+// ============================================================
+
+// ─────────────────────────────────────────
+// IDENTITY & ACCESS
+// ─────────────────────────────────────────
+
+Table roles {
+  id         bigserial   [pk, increment]
+  name       varchar(50) [not null, unique, note: 'ROLE_ADMIN | ROLE_OPERATOR | ROLE_FINANCE | ROLE_CUSTOMER']
+  created_at timestamp   [default: `now()`]
+}
+
+Table users {
+  id           bigserial    [pk, increment]
+  full_names   varchar(255) [not null]
+  email        varchar(255) [not null, unique]
+  phone_number varchar(20)  [not null]
+  password     varchar(255) [not null, note: 'BCrypt hashed']
+  status       varchar(20)  [not null, default: 'ACTIVE', note: 'ACTIVE | INACTIVE']
+  created_at   timestamp    [default: `now()`]
+  updated_at   timestamp
+}
+
+Table user_roles {
+  user_id bigint [not null, ref: > users.id]
+  role_id bigint [not null, ref: > roles.id]
+
+  indexes {
+    (user_id, role_id) [pk]
+  }
+}
+
+Table role_requests {
+  id             bigserial   [pk, increment]
+  user_id        bigint      [not null, ref: > users.id]
+  requested_role varchar(50) [not null, note: 'ROLE_OPERATOR | ROLE_FINANCE | ROLE_ADMIN']
+  status         varchar(20) [not null, default: 'PENDING', note: 'PENDING | APPROVED | REJECTED']
+  reviewed_by    bigint      [ref: > users.id, note: 'Admin who reviewed']
+  created_at     timestamp   [default: `now()`]
+  updated_at     timestamp
+}
+
+// ─────────────────────────────────────────
+// CUSTOMER & METER
+// ─────────────────────────────────────────
+
+Table customers {
+  id          bigserial    [pk, increment]
+  user_id     bigint       [unique, ref: - users.id, note: 'Optional link to user account']
+  full_names  varchar(255) [not null]
+  national_id varchar(16)  [not null, unique, note: 'Exactly 16-digit Rwanda NID']
+  email       varchar(255) [not null]
+  phone_number varchar(20) [not null]
+  address     varchar(500) [not null]
+  status      varchar(20)  [not null, default: 'ACTIVE', note: 'ACTIVE | INACTIVE']
+  created_at  timestamp    [default: `now()`]
+  updated_at  timestamp
+}
+
+Table meters {
+  id                bigserial   [pk, increment]
+  customer_id       bigint      [not null, ref: > customers.id]
+  meter_number      varchar(100)[not null, unique]
+  meter_type        varchar(20) [not null, note: 'WATER | ELECTRICITY']
+  installation_date date        [not null]
+  status            varchar(20) [not null, default: 'ACTIVE', note: 'ACTIVE | INACTIVE']
+  created_at        timestamp   [default: `now()`]
+  updated_at        timestamp
+}
+
+// ─────────────────────────────────────────
+// METER READINGS
+// ─────────────────────────────────────────
+
+Table meter_readings {
+  id               bigserial      [pk, increment]
+  meter_id         bigint         [not null, ref: > meters.id]
+  recorded_by      bigint         [not null, ref: > users.id, note: 'OPERATOR who captured reading']
+  previous_reading decimal(10,3)  [not null, note: 'Must be >= 0']
+  current_reading  decimal(10,3)  [not null, note: 'Must be > previous_reading']
+  consumption      decimal(10,3)  [not null, note: 'Computed: current - previous']
+  reading_date     date           [not null, note: 'Cannot be in the future']
+  reading_month    integer        [not null]
+  reading_year     integer        [not null]
+  created_at       timestamp      [default: `now()`]
+
+  indexes {
+    (meter_id, reading_month, reading_year) [unique, name: 'uq_reading_per_meter_month']
+  }
+}
+
+// ─────────────────────────────────────────
+// TARIFF CONFIGURATION
+// ─────────────────────────────────────────
+
+Table tariffs {
+  id             bigserial      [pk, increment]
+  meter_type     varchar(20)    [not null, note: 'WATER | ELECTRICITY']
+  tariff_type    varchar(20)    [not null, note: 'FLAT | TIER_BASED']
+  unit_price     decimal(10,4)  [note: 'Used for FLAT type only']
+  version        integer        [not null, default: 1]
+  effective_from date           [not null]
+  is_current     boolean        [not null, default: true, note: 'Only one current per meter_type']
+  created_at     timestamp      [default: `now()`]
+}
+
+Table tariff_tiers {
+  id         bigserial     [pk, increment]
+  tariff_id  bigint        [not null, ref: > tariffs.id]
+  min_units  decimal(10,3) [not null, note: 'e.g. 0, 100, 200']
+  max_units  decimal(10,3) [note: 'NULL means unlimited (last tier)']
+  unit_price decimal(10,4) [not null]
+}
+
+// ─────────────────────────────────────────
+// PRICING RULES
+// ─────────────────────────────────────────
+
+Table tax_configs {
+  id         bigserial      [pk, increment]
+  name       varchar(100)   [not null, note: 'e.g. VAT']
+  rate       decimal(5,4)   [not null, note: 'e.g. 0.1800 = 18%']
+  applies_to varchar(20)    [not null, note: 'WATER | ELECTRICITY | ALL']
+  is_active  boolean        [not null, default: true]
+  created_at timestamp      [default: `now()`]
+  updated_at timestamp
+}
+
+Table service_charges {
+  id         bigserial     [pk, increment]
+  name       varchar(100)  [not null]
+  amount     decimal(10,2) [not null, note: 'Fixed amount in FRW']
+  meter_type varchar(20)   [not null, note: 'WATER | ELECTRICITY']
+  is_active  boolean       [not null, default: true]
+  created_at timestamp     [default: `now()`]
+  updated_at timestamp
+}
+
+Table penalties {
+  id           bigserial     [pk, increment]
+  name         varchar(100)  [not null]
+  penalty_type varchar(20)   [not null, note: 'FIXED | PERCENTAGE']
+  amount       decimal(10,2) [note: 'Used when penalty_type = FIXED']
+  rate         decimal(5,4)  [note: 'Used when penalty_type = PERCENTAGE; e.g. 0.05 = 5%']
+  days_overdue integer       [not null, note: '1-3650 days after due_date']
+  is_active    boolean       [not null, default: true]
+  created_at   timestamp     [default: `now()`]
+}
+
+// ─────────────────────────────────────────
+// BILLING
+// ─────────────────────────────────────────
+
+Table bills {
+  id                  bigserial      [pk, increment]
+  bill_reference      varchar(50)    [not null, unique, note: 'Format: WASAC-YYYY-MM-W/E-XXXXXXXX']
+  customer_id         bigint         [not null, ref: > customers.id]
+  meter_id            bigint         [not null, ref: > meters.id]
+  meter_reading_id    bigint         [not null, unique, ref: - meter_readings.id]
+  billing_month       integer        [not null]
+  billing_year        integer        [not null]
+  consumption         decimal(10,3)  [not null]
+  unit_price          decimal(10,4)  [not null]
+  consumption_amount  decimal(12,2)  [not null]
+  service_charge      decimal(12,2)  [not null, default: 0]
+  tax_amount          decimal(12,2)  [not null, default: 0]
+  penalty_amount      decimal(12,2)  [not null, default: 0]
+  total_amount        decimal(12,2)  [not null]
+  amount_paid         decimal(12,2)  [not null, default: 0]
+  outstanding_balance decimal(12,2)  [not null]
+  status              varchar(20)    [not null, default: 'PENDING', note: 'PENDING | APPROVED | PAID | REJECTED']
+  due_date            date           [not null]
+  approved_by         bigint         [ref: > users.id, note: 'ADMIN or FINANCE user']
+  approved_at         timestamp
+  created_at          timestamp      [default: `now()`]
+  updated_at          timestamp
+
+  indexes {
+    (customer_id, meter_id, billing_month, billing_year) [unique, name: 'uq_bill_per_meter_period']
+  }
+}
+
+// ─────────────────────────────────────────
+// PAYMENTS
+// ─────────────────────────────────────────
+
+Table payments {
+  id               bigserial     [pk, increment]
+  bill_id          bigint        [not null, ref: > bills.id]
+  recorded_by      bigint        [not null, ref: > users.id, note: 'FINANCE user']
+  amount_paid      decimal(12,2) [not null, note: 'Capped at outstanding_balance']
+  payment_method   varchar(30)   [not null, note: 'CASH | MOBILE_MONEY | BANK_TRANSFER']
+  payment_date     timestamp     [not null, note: 'Cannot be in the future']
+  reference_number varchar(100)  [note: 'External transaction reference']
+  created_at       timestamp     [default: `now()`]
+}
+
+// ─────────────────────────────────────────
+// NOTIFICATIONS (auto-inserted by triggers)
+// ─────────────────────────────────────────
+
+Table notifications {
+  id                bigserial   [pk, increment]
+  customer_id       bigint      [not null, ref: > customers.id]
+  message           text        [not null]
+  notification_type varchar(30) [not null, note: 'BILL_GENERATED | PAYMENT_CONFIRMED']
+  is_read           boolean     [not null, default: false]
+  created_at        timestamp   [default: `now()`]
+}
