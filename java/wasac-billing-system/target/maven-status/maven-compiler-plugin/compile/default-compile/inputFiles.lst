@@ -54,6 +54,7 @@
 /home/paulin/Documents/National Exams/java/wasac-billing-system/src/main/java/rw/gov/wasac/billing/service/CustomerService.java
 /home/paulin/Documents/National Exams/java/wasac-billing-system/src/main/java/rw/gov/wasac/billing/service/MeterReadingService.java
 /home/paulin/Documents/National Exams/java/wasac-billing-system/src/main/java/rw/gov/wasac/billing/service/MeterService.java
+/home/paulin/Documents/National Exams/java/wasac-billing-system/src/main/java/rw/gov/wasac/billing/service/MonthlyBillingJob.java
 /home/paulin/Documents/National Exams/java/wasac-billing-system/src/main/java/rw/gov/wasac/billing/service/NotificationService.java
 /home/paulin/Documents/National Exams/java/wasac-billing-system/src/main/java/rw/gov/wasac/billing/service/PaymentService.java
 /home/paulin/Documents/National Exams/java/wasac-billing-system/src/main/java/rw/gov/wasac/billing/service/PenaltyService.java

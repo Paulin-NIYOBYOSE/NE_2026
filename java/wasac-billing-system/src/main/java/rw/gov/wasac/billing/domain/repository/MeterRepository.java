@@ -15,4 +15,5 @@ public interface MeterRepository extends JpaRepository<Meter, Long> {
     Optional<Meter> findByMeterNumber(String meterNumber);
     List<Meter> findByCustomer(Customer customer);
     List<Meter> findByCustomerAndStatus(Customer customer, MeterStatus status);
+    List<Meter> findByStatus(MeterStatus status);
 }

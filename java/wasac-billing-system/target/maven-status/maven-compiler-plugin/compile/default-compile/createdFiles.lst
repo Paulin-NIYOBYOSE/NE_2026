@@ -72,6 +72,7 @@ rw/gov/wasac/billing/domain/entity/Notification$NotificationBuilder.class
 rw/gov/wasac/billing/web/dto/response/MeterReadingResponse$MeterReadingResponseBuilder.class
 rw/gov/wasac/billing/web/dto/response/ApiResponse$ApiResponseBuilder.class
 rw/gov/wasac/billing/web/dto/request/RecordPaymentRequest.class
+rw/gov/wasac/billing/service/MonthlyBillingJob.class
 rw/gov/wasac/billing/web/dto/request/CreateTaxConfigRequest.class
 rw/gov/wasac/billing/domain/entity/Role.class
 rw/gov/wasac/billing/web/dto/request/CreateCustomerRequest.class

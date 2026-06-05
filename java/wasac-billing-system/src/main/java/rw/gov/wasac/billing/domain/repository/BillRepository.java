@@ -17,6 +17,7 @@ public interface BillRepository extends JpaRepository<Bill, Long> {
         Customer customer, Meter meter, Integer month, Integer year);
     Optional<Bill> findByBillReference(String billReference);
     List<Bill> findByCustomerOrderByCreatedAtDesc(Customer customer);
+    List<Bill> findByCustomer_User_IdOrderByCreatedAtDesc(Long userId);
     List<Bill> findByCustomerAndStatus(Customer customer, BillStatus status);
     Optional<Bill> findByMeterReading(MeterReading meterReading);
 }

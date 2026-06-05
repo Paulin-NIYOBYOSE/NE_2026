@@ -37,6 +37,9 @@ public class Tariff {
     @Column(name = "effective_from", nullable = false)
     private LocalDate effectiveFrom;
 
+    @Column(name = "effective_to")
+    private LocalDate effectiveTo;
+
     @Column(name = "is_current", nullable = false)
     @Builder.Default
     private Boolean isCurrent = true;

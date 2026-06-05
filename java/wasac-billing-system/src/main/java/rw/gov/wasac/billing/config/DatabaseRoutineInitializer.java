@@ -92,7 +92,7 @@ public class DatabaseRoutineInitializer {
             "        v_message := 'Dear ' || v_customer_name" +
             "                  || ', Your ' || v_month_name || '/' || NEW.billing_year" +
             "                  || ' utility bill of ' || TO_CHAR(NEW.total_amount, 'FM999,999,990.00')" +
-            "                  || ' FRW has been successfully processed.';" +
+            "                  || ' FRW has been fully paid. Thank you!';" +
             "        INSERT INTO notifications (customer_id, message, notification_type, is_read, created_at)" +
             "        VALUES (NEW.customer_id, v_message, 'PAYMENT_CONFIRMED', false, NOW());" +
             "    END IF;" +

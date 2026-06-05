@@ -103,6 +103,7 @@ Table tariffs {
   unit_price     decimal(10,4)  [note: 'Used for FLAT type only']
   version        integer        [not null, default: 1]
   effective_from date           [not null]
+  effective_to   date           [note: 'NULL = still active. Set to effectiveFrom-1 when superseded by a newer tariff']
   is_current     boolean        [not null, default: true, note: 'Only one current per meter_type']
   created_at     timestamp      [default: `now()`]
 }

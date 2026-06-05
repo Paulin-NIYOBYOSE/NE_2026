@@ -48,7 +48,7 @@ public class BillService {
             throw new DuplicateResourceException("Bill already generated for this meter reading");
         }
 
-        Tariff tariff = tariffService.findCurrentTariffEntity(meter.getMeterType());
+        Tariff tariff = tariffService.findTariffForDate(meter.getMeterType(), reading.getReadingDate());
         BigDecimal consumption = reading.getConsumption();
         BigDecimal consumptionAmount = calculateConsumptionAmount(tariff, consumption);
         BigDecimal effectiveUnitPrice = tariff.getTariffType() == TariffType.FLAT
@@ -62,17 +62,20 @@ public class BillService {
             .map(ServiceCharge::getAmount)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // Taxes
+        // subtotal = consumption cost + fixed service charges
+        BigDecimal subtotal = consumptionAmount.add(totalServiceCharge);
+
+        // VAT applied on subtotal (not on consumption alone)
         AppliesTo appliesTo = meter.getMeterType() == MeterType.WATER ? AppliesTo.WATER : AppliesTo.ELECTRICITY;
         BigDecimal totalTaxRate = taxConfigService.getActiveForMeterType(appliesTo).stream()
             .map(TaxConfig::getRate)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
-        BigDecimal taxAmount = consumptionAmount.multiply(totalTaxRate).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal taxAmount = subtotal.multiply(totalTaxRate).setScale(2, RoundingMode.HALF_UP);
 
-        // Penalty for overdue bills (check previous unpaid bills)
+        // Penalty applied only when customer has overdue approved bills
         BigDecimal penaltyAmount = calculatePenaltyForCustomer(customer, consumptionAmount);
 
-        BigDecimal totalAmount = consumptionAmount.add(totalServiceCharge).add(taxAmount).add(penaltyAmount);
+        BigDecimal totalAmount = subtotal.add(taxAmount).add(penaltyAmount);
         String reference = generateBillReference(meter.getMeterType(), reading.getReadingYear(), reading.getReadingMonth());
 
         Bill bill = Bill.builder()
@@ -196,11 +199,14 @@ public class BillService {
     }
 
     public List<BillResponse> getMyBills(User user) {
-        List<Bill> bills = billRepository.findAll().stream()
-            .filter(b -> b.getCustomer().getUser() != null &&
-                b.getCustomer().getUser().getId().equals(user.getId()))
-            .collect(Collectors.toList());
-        return bills.stream().map(this::toResponse).collect(Collectors.toList());
+        return billRepository.findByCustomer_User_IdOrderByCreatedAtDesc(user.getId())
+            .stream().map(this::toResponse).collect(Collectors.toList());
+    }
+
+    // Used by MonthlyBillingJob — no User actor needed (actor not persisted on bill)
+    @Transactional
+    public BillResponse generateBillFromReading(MeterReading reading) {
+        return generateBill(new GenerateBillRequest(reading.getId()), null);
     }
 
     public BillResponse toResponse(Bill b) {

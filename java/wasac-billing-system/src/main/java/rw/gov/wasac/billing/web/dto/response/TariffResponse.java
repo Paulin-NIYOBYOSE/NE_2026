@@ -16,6 +16,7 @@ public class TariffResponse {
     private BigDecimal unitPrice;
     private Integer version;
     private LocalDate effectiveFrom;
+    private LocalDate effectiveTo;
     private Boolean isCurrent;
     private LocalDateTime createdAt;
     private List<TierResponse> tiers;

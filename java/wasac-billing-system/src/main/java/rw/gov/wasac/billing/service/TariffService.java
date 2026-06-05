@@ -30,9 +30,13 @@ public class TariffService {
             throw new BusinessException("Tiers are required for TIER_BASED tariff");
         }
 
-        // Invalidate previous current tariff for this meter type
+        // Invalidate previous current tariff — seal its effective_to the day before the new one starts
         tariffRepository.findByMeterTypeAndIsCurrentTrue(request.getMeterType())
-            .ifPresent(t -> { t.setIsCurrent(false); tariffRepository.save(t); });
+            .ifPresent(t -> {
+                t.setIsCurrent(false);
+                t.setEffectiveTo(request.getEffectiveFrom().minusDays(1));
+                tariffRepository.save(t);
+            });
 
         int newVersion = tariffRepository.findByMeterTypeOrderByVersionDesc(request.getMeterType())
             .stream().findFirst().map(t -> t.getVersion() + 1).orElse(1);
@@ -79,6 +83,15 @@ public class TariffService {
             .orElseThrow(() -> new BusinessException("No active tariff configured for " + meterType));
     }
 
+    // Used by billing engine: picks the tariff valid on the reading date
+    public Tariff findTariffForDate(MeterType meterType, java.time.LocalDate date) {
+        List<Tariff> matches = tariffRepository.findByMeterTypeAndDate(meterType, date);
+        if (!matches.isEmpty()) return matches.get(0);
+        // Fallback: if no date-range match, use the current active tariff
+        return tariffRepository.findByMeterTypeAndIsCurrentTrue(meterType)
+            .orElseThrow(() -> new BusinessException("No tariff configured for " + meterType + " on " + date));
+    }
+
     public Tariff findById(Long id) {
         return tariffRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Tariff", id));
@@ -96,6 +109,7 @@ public class TariffService {
         return TariffResponse.builder()
             .id(t.getId()).meterType(t.getMeterType()).tariffType(t.getTariffType())
             .unitPrice(t.getUnitPrice()).version(t.getVersion()).effectiveFrom(t.getEffectiveFrom())
-            .isCurrent(t.getIsCurrent()).createdAt(t.getCreatedAt()).tiers(tiers).build();
+            .effectiveTo(t.getEffectiveTo()).isCurrent(t.getIsCurrent())
+            .createdAt(t.getCreatedAt()).tiers(tiers).build();
     }
 }

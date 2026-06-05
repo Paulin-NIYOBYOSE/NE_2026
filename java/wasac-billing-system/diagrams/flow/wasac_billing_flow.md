@@ -18,7 +18,7 @@ flowchart TD
     subgraph Setup["  ADMIN — System Setup  "]
         direction LR
         SC[Register Customer\nNID · phone · address] --> SM[Assign Meter\nWATER or ELECTRICITY]
-        SM --> ST[Configure Tariffs\nFLAT or TIER_BASED · versioned]
+        SM --> ST[Configure Tariffs\nFLAT or TIER_BASED · versioned\neffective_from / effective_to]
         ST --> SR[Configure VAT · Service Charges · Penalties]
     end
 
@@ -29,10 +29,19 @@ flowchart TD
     end
 
     subgraph Billing["  ADMIN · FINANCE — Billing  "]
-        RS --> BG[Generate Bill\nconsumption × tariff rate\n+ service charge + VAT\n+ overdue penalty]
-        BG --> BP[(Bill saved\nstatus = PENDING\ndue date = today + 30 days)]
-        BP --> |PostgreSQL trigger| BN[(Notification:\nBILL_GENERATED)]
+        RS --> BT[Pick tariff valid\non reading date]
+        BT --> BG[subtotal = consumption×rate + service charges\nVAT = subtotal × tax rate\ntotal = subtotal + VAT + penalty]
+        BG --> BP[(Bill saved\nstatus = PENDING\ndue = today + 30 days)]
+        BP --> |PostgreSQL trigger| BN[(Notification: BILL_GENERATED)]
         BP --> BA[Approve Bill\nstatus → APPROVED]
+    end
+
+    subgraph Scheduler["  Auto Billing — 1st of every month 02:00  "]
+        CRON([Scheduled Job]) --> SCAN[Scan all ACTIVE meters]
+        SCAN --> CHK{Reading for last month?\nNo bill yet?}
+        CHK --> |Yes| AUTO[Generate Bill automatically]
+        CHK --> |No| SKIP([Skip meter])
+        AUTO --> BP
     end
 
     subgraph Payment["  FINANCE — Payment  "]
@@ -40,11 +49,11 @@ flowchart TD
         PR --> PB{Balance = 0?}
         PB --> |No| PP[(Bill stays APPROVED\nPartial payment saved)]
         PB --> |Yes| PF[(Bill status → PAID)]
-        PF --> |PostgreSQL trigger| PN[(Notification:\nPAYMENT_CONFIRMED)]
+        PF --> |PostgreSQL trigger| PN[(Notification: PAYMENT_CONFIRMED\nbill fully paid)]
     end
 
     subgraph Portal["  CUSTOMER — Self-Service  "]
-        CV[View own Bills\nPayments · Notifications\nmark notifications as read]
+        CV[View own Bills\nPayments · Notifications\nmark as read]
     end
 
     BN --> Portal
@@ -54,6 +63,7 @@ flowchart TD
     style E1 fill:#e55,color:#fff,stroke:#c00
     style E2 fill:#e55,color:#fff,stroke:#c00
     style E3 fill:#e55,color:#fff,stroke:#c00
+    style SKIP fill:#e55,color:#fff,stroke:#c00
     style BP fill:#336791,color:#fff,stroke:#234f6e
     style RS fill:#336791,color:#fff,stroke:#234f6e
     style PP fill:#336791,color:#fff,stroke:#234f6e
@@ -62,4 +72,5 @@ flowchart TD
     style PN fill:#336791,color:#fff,stroke:#234f6e
     style BG fill:#2a6,color:#fff,stroke:#1a5
     style PR fill:#2a6,color:#fff,stroke:#1a5
+    style CRON fill:#a47,color:#fff,stroke:#834
 ```

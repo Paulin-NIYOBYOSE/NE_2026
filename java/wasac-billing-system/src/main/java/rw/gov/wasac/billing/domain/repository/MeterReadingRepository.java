@@ -11,6 +11,7 @@ import java.util.Optional;
 @Repository
 public interface MeterReadingRepository extends JpaRepository<MeterReading, Long> {
     boolean existsByMeterAndReadingMonthAndReadingYear(Meter meter, Integer month, Integer year);
+    Optional<MeterReading> findByMeterAndReadingMonthAndReadingYear(Meter meter, Integer month, Integer year);
     List<MeterReading> findByMeterOrderByReadingYearDescReadingMonthDesc(Meter meter);
     Optional<MeterReading> findTopByMeterOrderByReadingYearDescReadingMonthDesc(Meter meter);
 }
