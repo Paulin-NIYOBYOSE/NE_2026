@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import rw.gov.wasac.billing.domain.entity.*;
 import rw.gov.wasac.billing.domain.enums.BillStatus;
+import rw.gov.wasac.billing.domain.enums.NotificationType;
 import rw.gov.wasac.billing.domain.repository.*;
 import rw.gov.wasac.billing.exception.BusinessException;
 import rw.gov.wasac.billing.web.dto.request.RecordPaymentRequest;
@@ -22,6 +23,7 @@ public class PaymentService {
     private final BillService billService;
     private final BillRepository billRepository;
     private final CustomerService customerService;
+    private final NotificationService notificationService;
 
     @Transactional
     public PaymentResponse recordPayment(RecordPaymentRequest request, User finance) {
@@ -57,11 +59,23 @@ public class PaymentService {
         bill.setAmountPaid(bill.getAmountPaid().add(paid));
         bill.setOutstandingBalance(bill.getTotalAmount().subtract(bill.getAmountPaid()));
 
+        boolean fullyPaid = false;
         if (bill.getOutstandingBalance().compareTo(BigDecimal.ZERO) <= 0) {
             bill.setOutstandingBalance(BigDecimal.ZERO);
             bill.setStatus(BillStatus.PAID);
+            fullyPaid = true;
         }
         billRepository.save(bill);
+
+        Customer customer = bill.getCustomer();
+        String msg = fullyPaid
+            ? String.format("Your payment of <strong>%,.2f FRW</strong> has been received. " +
+                "Bill <strong>%s</strong> is now <strong>fully paid</strong>. Thank you!",
+                paid, bill.getBillReference())
+            : String.format("Your payment of <strong>%,.2f FRW</strong> has been recorded for bill " +
+                "<strong>%s</strong>. Remaining balance: <strong>%,.2f FRW</strong>.",
+                paid, bill.getBillReference(), bill.getOutstandingBalance());
+        notificationService.sendAndSave(customer, NotificationType.PAYMENT_CONFIRMED, msg);
 
         return toResponse(payment);
     }

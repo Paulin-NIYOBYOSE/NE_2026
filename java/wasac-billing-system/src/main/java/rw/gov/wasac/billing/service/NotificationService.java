@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import rw.gov.wasac.billing.domain.entity.*;
+import rw.gov.wasac.billing.domain.enums.NotificationType;
 import rw.gov.wasac.billing.domain.repository.*;
 import rw.gov.wasac.billing.exception.ResourceNotFoundException;
 import rw.gov.wasac.billing.web.dto.response.NotificationResponse;
@@ -18,6 +19,7 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final CustomerRepository customerRepository;
     private final CustomerService customerService;
+    private final EmailService emailService;
 
     public List<NotificationResponse> getMyNotifications(User user) {
         Customer customer = customerService.getActiveCustomerForUser(user);
@@ -39,6 +41,24 @@ public class NotificationService {
 
     public List<NotificationResponse> getAllNotifications() {
         return notificationRepository.findAll().stream().map(this::toResponse).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void sendAndSave(Customer customer, NotificationType type, String message) {
+        Notification notif = Notification.builder()
+            .customer(customer)
+            .notificationType(type)
+            .message(message)
+            .build();
+        notificationRepository.save(notif);
+
+        String subject = switch (type) {
+            case BILL_GENERATED -> "WASAC - New Bill Generated";
+            case PAYMENT_CONFIRMED -> "WASAC - Payment Confirmed";
+            default -> "WASAC - Notification";
+        };
+        String htmlBody = "<p>" + message + "</p>";
+        emailService.send(customer.getEmail(), subject, EmailService.buildHtml(customer.getFullNames(), htmlBody));
     }
 
     public long countUnread(User user) {

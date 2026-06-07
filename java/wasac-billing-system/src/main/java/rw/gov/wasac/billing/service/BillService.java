@@ -8,6 +8,7 @@ import rw.gov.wasac.billing.domain.entity.*;
 import rw.gov.wasac.billing.domain.enums.*;
 import rw.gov.wasac.billing.domain.repository.*;
 import rw.gov.wasac.billing.exception.*;
+import rw.gov.wasac.billing.domain.enums.NotificationType;
 import rw.gov.wasac.billing.web.dto.request.GenerateBillRequest;
 import rw.gov.wasac.billing.web.dto.response.BillResponse;
 
@@ -33,6 +34,7 @@ public class BillService {
     private final TaxConfigService taxConfigService;
     private final ServiceChargeService serviceChargeService;
     private final PenaltyService penaltyService;
+    private final NotificationService notificationService;
 
     @Transactional
     public BillResponse generateBill(GenerateBillRequest request, User actor) {
@@ -102,7 +104,18 @@ public class BillService {
             .dueDate(LocalDate.now().plusDays(30))
             .build();
 
-        return toResponse(billRepository.save(bill));
+        Bill saved = billRepository.save(bill);
+
+        String monthName = java.time.Month.of(reading.getReadingMonth()).getDisplayName(
+            java.time.format.TextStyle.FULL, java.util.Locale.ENGLISH);
+        String msg = String.format(
+            "Your %s/%d utility bill of <strong>%,.2f FRW</strong> has been generated. " +
+            "Reference: <strong>%s</strong>. Due date: <strong>%s</strong>.",
+            monthName, reading.getReadingYear(),
+            totalAmount, reference, saved.getDueDate());
+        notificationService.sendAndSave(customer, NotificationType.BILL_GENERATED, msg);
+
+        return toResponse(saved);
     }
 
     private BigDecimal calculateConsumptionAmount(Tariff tariff, BigDecimal consumption) {

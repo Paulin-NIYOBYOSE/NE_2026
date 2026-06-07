@@ -1,0 +1,40 @@
+spring.application.name=wasac-billing-system
+server.port=8080
+
+# PostgreSQL — update with your local DB credentials
+spring.datasource.url=jdbc:postgresql://localhost:5432/wasac_billing
+spring.datasource.username=YOUR_DB_USERNAME
+spring.datasource.password=YOUR_DB_PASSWORD
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+# JPA / Hibernate
+spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=false
+spring.jpa.properties.hibernate.format_sql=true
+
+# Jackson
+spring.jackson.serialization.indent-output=true
+spring.jackson.property-naming-strategy=SNAKE_CASE
+spring.jackson.default-property-inclusion=non_null
+
+# JWT — use a strong random base64 secret (min 32 chars)
+app.jwt.secret=YOUR_BASE64_JWT_SECRET
+app.jwt.expiration-ms=86400000
+
+# Swagger UI
+springdoc.api-docs.path=/v3/api-docs
+springdoc.swagger-ui.path=/swagger-ui.html
+springdoc.swagger-ui.operationsSorter=method
+springdoc.swagger-ui.tagsSorter=
+
+# Gmail SMTP — use a Gmail App Password (not your account password)
+# Get one at: https://myaccount.google.com/apppasswords
+app.mail.from-name=WASAC Billing System
+spring.mail.host=smtp.gmail.com
+spring.mail.port=587
+spring.mail.username=YOUR_GMAIL_ADDRESS@gmail.com
+spring.mail.password=YOUR_GMAIL_APP_PASSWORD
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+spring.mail.properties.mail.smtp.starttls.required=true
