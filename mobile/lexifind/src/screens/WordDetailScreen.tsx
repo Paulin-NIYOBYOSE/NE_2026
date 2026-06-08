@@ -17,6 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useApp } from '../context/AppContext';
 import { useTheme } from '../context/ThemeContext';
+import { useAudioContext } from '../context/AudioContext';
 import { DrawerParamList, RootStackParamList, WordEntry } from '../types';
 import { Colors } from '../constants/colors';
 import WordCard from '../components/WordCard';
@@ -37,6 +38,7 @@ interface Props {
 export default function WordDetailScreen({ navigation, route }: Props) {
   const { state, searchWord } = useApp();
   const { isDark } = useTheme();
+  const { stopAudio } = useAudioContext();
   const insets = useSafeAreaInsets();
   const [entries, setEntries] = useState<WordEntry[]>(route.params.entries);
   const [word, setWord] = useState(route.params.word);
@@ -54,6 +56,16 @@ export default function WordDetailScreen({ navigation, route }: Props) {
   const inputBorder = isDark ? '#3A3658' : '#E4E6F1';
   const dividerColor = isDark ? '#2E2B44' : '#E4E6F1';
   const sourceMuted = isDark ? '#6B6B8A' : '#9498B0';
+
+  // Stop audio whenever the displayed word changes (new inline search)
+  useEffect(() => {
+    stopAudio();
+  }, [word]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Stop audio when navigating away from this screen
+  useEffect(() => {
+    return () => { stopAudio(); };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     setEntries(route.params.entries);
