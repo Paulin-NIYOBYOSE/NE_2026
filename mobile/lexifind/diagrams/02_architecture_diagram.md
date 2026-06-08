@@ -1,5 +1,7 @@
 # LexiFind — Architecture Diagram
 
+**Figma Design:** [LexiFind UI](https://www.figma.com/design/Xd2oEHbjKM5Alb67NuTkBs/LexiFind?node-id=0-1&t=8bAS6BuROP9yK9DF-1)
+
 ```mermaid
 graph TD
     subgraph Presentation["Presentation Layer — Screens"]
