@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat >> *)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('main:', d.get\\('main'\\)\\); print\\('version:', d.get\\('version'\\)\\)\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('vector-icons:', d.get\\('version'\\)\\); print\\('peerDeps:', d.get\\('peerDependencies',{}\\)\\)\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('expo-font:', d.get\\('version'\\)\\)\")",
+      "Bash(npx expo *)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('expo-font now:', d.get\\('version'\\)\\)\")"
+    ],
+    "additionalDirectories": [
+      "/home/paulin"
+    ]
+  }
+}

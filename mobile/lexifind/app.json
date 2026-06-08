@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "LexiFind",
+    "slug": "lexifind",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#5B4FE9"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.lexitech.lexifind"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#5B4FE9"
+      },
+      "package": "com.lexitech.lexifind"
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-av",
+      "expo-font"
+    ]
+  }
+}
