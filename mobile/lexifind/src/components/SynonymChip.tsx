@@ -19,21 +19,23 @@ export default function SynonymChip({
 
   const bg = isSynonym
     ? isDark
-      ? 'rgba(91,79,233,0.18)'
-      : Colors.primaryLight
+      ? 'rgba(13,148,136,0.18)'
+      : Colors.tealLight
     : isDark
     ? 'rgba(225,29,72,0.15)'
     : '#FFF1F2';
 
   const border = isSynonym
     ? isDark
-      ? 'rgba(91,79,233,0.3)'
-      : Colors.primary + '40'
+      ? 'rgba(13,148,136,0.38)'
+      : 'rgba(13,148,136,0.35)'
     : isDark
     ? 'rgba(225,29,72,0.3)'
     : '#E11D48' + '40';
 
-  const textColor = isSynonym ? Colors.primary : '#E11D48';
+  const textColor = isSynonym
+    ? isDark ? '#5EEAD4' : Colors.teal
+    : '#E11D48';
 
   return (
     <TouchableOpacity

@@ -14,7 +14,7 @@ interface Props {
 export default function HistoryItem({ item, onPress, isDark = false }: Props) {
   const textPrimary = isDark ? '#F5F5FF' : '#1A1D2E';
   const textMuted = isDark ? '#6B6B8A' : '#9498B0';
-  const iconBg = isDark ? 'rgba(91,79,233,0.18)' : Colors.primaryLight;
+  const iconBg = isDark ? 'rgba(217,119,6,0.18)' : Colors.amberLight;
   const rowBg = isDark ? 'transparent' : 'transparent';
 
   return (
@@ -24,7 +24,7 @@ export default function HistoryItem({ item, onPress, isDark = false }: Props) {
       activeOpacity={0.65}
     >
       <View style={[styles.iconWrap, { backgroundColor: iconBg }]}>
-        <Ionicons name="time-outline" size={17} color={Colors.primary} />
+        <Ionicons name="time-outline" size={17} color={Colors.amber} />
       </View>
       <View style={styles.info}>
         <Text style={[styles.word, { color: textPrimary }]}>{item.word}</Text>

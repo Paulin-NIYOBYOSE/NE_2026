@@ -43,6 +43,15 @@ const SUGGESTIONS = [
   'resilient',
 ];
 
+const CHIP_PALETTE = [
+  { bg: '#F5F3FF', text: '#7C3AED', border: 'rgba(124,58,237,0.30)',  darkBg: 'rgba(124,58,237,0.18)', darkText: '#A78BFA', darkBorder: 'rgba(124,58,237,0.40)' },
+  { bg: '#FFFBEB', text: '#D97706', border: 'rgba(217,119,6,0.30)',   darkBg: 'rgba(217,119,6,0.18)',  darkText: '#FCD34D', darkBorder: 'rgba(217,119,6,0.40)'  },
+  { bg: '#EFF6FF', text: '#2563EB', border: 'rgba(37,99,235,0.30)',   darkBg: 'rgba(37,99,235,0.18)',  darkText: '#93C5FD', darkBorder: 'rgba(37,99,235,0.40)'  },
+  { bg: '#F0FDFA', text: '#0D9488', border: 'rgba(13,148,136,0.30)',  darkBg: 'rgba(13,148,136,0.18)', darkText: '#5EEAD4', darkBorder: 'rgba(13,148,136,0.40)' },
+  { bg: '#FFF1F2', text: '#E11D48', border: 'rgba(225,29,72,0.30)',   darkBg: 'rgba(225,29,72,0.18)',  darkText: '#FDA4AF', darkBorder: 'rgba(225,29,72,0.40)'  },
+  { bg: '#F0FDF4', text: '#16A34A', border: 'rgba(22,163,74,0.30)',   darkBg: 'rgba(22,163,74,0.18)',  darkText: '#86EFAC', darkBorder: 'rgba(22,163,74,0.40)'  },
+];
+
 export default function SearchScreen({ navigation, route }: Props) {
   const { state, searchWord } = useApp();
   const { isDark } = useTheme();
@@ -53,9 +62,7 @@ export default function SearchScreen({ navigation, route }: Props) {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(24)).current;
 
-  const bg = isDark ? '#0F0E17' : '#F5F6FF';
-  const chipBg = isDark ? '#1E1B2E' : '#FFFFFF';
-  const chipBorder = isDark ? 'rgba(91,79,233,0.3)' : 'rgba(91,79,233,0.25)';
+  const bg = isDark ? '#0F0E17' : Colors.background;
   const sectionLabelColor = isDark ? '#6B6B8A' : '#9498B0';
 
   useEffect(() => {
@@ -187,22 +194,30 @@ export default function SearchScreen({ navigation, route }: Props) {
               Try searching for…
             </Text>
             <View style={styles.suggestionsRow}>
-              {SUGGESTIONS.map((w) => (
-                <TouchableOpacity
-                  key={w}
-                  style={[
-                    styles.chip,
-                    { backgroundColor: chipBg, borderColor: chipBorder },
-                  ]}
-                  onPress={() => {
-                    setQuery(w);
-                    handleSearch(w);
-                  }}
-                  activeOpacity={0.75}
-                >
-                  <Text style={styles.chipText}>{w}</Text>
-                </TouchableOpacity>
-              ))}
+              {SUGGESTIONS.map((w, i) => {
+                const cp = CHIP_PALETTE[i % CHIP_PALETTE.length];
+                return (
+                  <TouchableOpacity
+                    key={w}
+                    style={[
+                      styles.chip,
+                      {
+                        backgroundColor: isDark ? cp.darkBg : cp.bg,
+                        borderColor: isDark ? cp.darkBorder : cp.border,
+                      },
+                    ]}
+                    onPress={() => {
+                      setQuery(w);
+                      handleSearch(w);
+                    }}
+                    activeOpacity={0.75}
+                  >
+                    <Text style={[styles.chipText, { color: isDark ? cp.darkText : cp.text }]}>
+                      {w}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           </View>
         )}
@@ -288,6 +303,5 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     letterSpacing: 0.2,
-    color: Colors.primary,
   },
 });

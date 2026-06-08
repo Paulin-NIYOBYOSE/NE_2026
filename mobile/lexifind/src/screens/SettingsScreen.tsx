@@ -34,7 +34,7 @@ export default function SettingsScreen({ navigation }: Props) {
   const { theme, isDark, setTheme, soundEnabled, setSoundEnabled } = useTheme();
   const { state, clearHistory } = useApp();
 
-  const bg = isDark ? '#0F0E17' : '#F5F6FF';
+  const bg = isDark ? '#0F0E17' : Colors.background;
   const cardBg = isDark ? '#1E1B2E' : '#FFFFFF';
   const cardBorder = isDark ? '#2E2B44' : '#E4E6F1';
   const textPrimary = isDark ? '#F5F5FF' : '#1A1D2E';
@@ -128,8 +128,8 @@ export default function SettingsScreen({ navigation }: Props) {
         <View style={[styles.card, { backgroundColor: cardBg, borderColor: cardBorder }]}>
           <View style={styles.toggleRow}>
             <View style={styles.toggleLeft}>
-              <View style={[styles.themeIcon, { backgroundColor: isDark ? '#272438' : '#F5F6FF' }]}>
-                <Ionicons name="volume-high-outline" size={20} color={Colors.primary} />
+              <View style={[styles.themeIcon, { backgroundColor: isDark ? 'rgba(13,148,136,0.18)' : Colors.tealLight }]}>
+                <Ionicons name="volume-high-outline" size={20} color={Colors.teal} />
               </View>
               <View>
                 <Text style={[styles.rowLabel, { color: textPrimary }]}>Sound Effects</Text>
@@ -139,8 +139,8 @@ export default function SettingsScreen({ navigation }: Props) {
             <Switch
               value={soundEnabled}
               onValueChange={setSoundEnabled}
-              trackColor={{ false: isDark ? '#2E2B44' : '#E4E6F1', true: Colors.primaryLight }}
-              thumbColor={soundEnabled ? Colors.primary : (isDark ? '#6B6B8A' : '#9498B0')}
+              trackColor={{ false: isDark ? '#2E2B44' : Colors.border, true: Colors.tealLight }}
+              thumbColor={soundEnabled ? Colors.teal : (isDark ? '#6B6B8A' : '#9498B0')}
             />
           </View>
         </View>
@@ -167,7 +167,7 @@ export default function SettingsScreen({ navigation }: Props) {
         <View style={[styles.card, { backgroundColor: cardBg, borderColor: cardBorder }]}>
           <View style={styles.aboutHeader}>
             <View style={styles.aboutIconWrap}>
-              <Ionicons name="book" size={30} color={Colors.primary} />
+              <Ionicons name="book" size={30} color={Colors.amber} />
             </View>
             <View>
               <Text style={[styles.aboutName, { color: textPrimary }]}>LexiFind</Text>
@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
     width: 58,
     height: 58,
     borderRadius: 18,
-    backgroundColor: Colors.primaryLight,
+    backgroundColor: Colors.amberLight,
     alignItems: 'center',
     justifyContent: 'center',
   },

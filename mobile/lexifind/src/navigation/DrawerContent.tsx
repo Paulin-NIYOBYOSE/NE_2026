@@ -39,9 +39,9 @@ export default function DrawerContent(props: DrawerContentComponentProps) {
 
   const currentRoute = props.state.routes[props.state.index]?.name ?? '';
 
-  const bg = isDark ? '#0F0E17' : '#F5F6FF';
+  const bg = isDark ? '#0F0E17' : Colors.background;
   const surfaceBg = isDark ? '#1E1B2E' : '#FFFFFF';
-  const borderColor = isDark ? '#2E2B44' : '#E4E6F1';
+  const borderColor = isDark ? '#2E2B44' : Colors.border;
   const textPrimary = isDark ? '#F5F5FF' : '#1A1D2E';
   const textMuted = isDark ? '#6B6B8A' : '#9498B0';
   const activeNavBg = isDark ? 'rgba(91,79,233,0.18)' : Colors.primaryLight;
@@ -93,9 +93,9 @@ export default function DrawerContent(props: DrawerContentComponentProps) {
             <Text style={styles.appTagline}>DICTIONARY</Text>
           </View>
         </View>
-        <View style={styles.statsBadge}>
-          <Ionicons name="time-outline" size={13} color="rgba(255,255,255,0.7)" />
-          <Text style={styles.statsText}>
+        <View style={[styles.statsBadge, { backgroundColor: 'rgba(253,211,77,0.18)' }]}>
+          <Ionicons name="time-outline" size={13} color="rgba(253,211,77,0.9)" />
+          <Text style={[styles.statsText, { color: 'rgba(253,211,77,0.9)' }]}>
             {state.history.length} word{state.history.length !== 1 ? 's' : ''} searched
           </Text>
         </View>
@@ -145,7 +145,7 @@ export default function DrawerContent(props: DrawerContentComponentProps) {
       {/* History section header */}
       <View style={[styles.sectionHeader, { borderBottomColor: borderColor }]}>
         <View style={styles.sectionTitleRow}>
-          <Ionicons name="time" size={17} color={Colors.primary} />
+          <Ionicons name="time" size={17} color={Colors.amber} />
           <Text style={[styles.sectionTitle, { color: textPrimary }]}>Recent Searches</Text>
         </View>
         {state.history.length > 0 && (
@@ -169,8 +169,8 @@ export default function DrawerContent(props: DrawerContentComponentProps) {
       >
         {state.history.length === 0 ? (
           <View style={styles.emptyWrap}>
-            <View style={[styles.emptyIconWrap, { backgroundColor: Colors.primaryLight }]}>
-              <Ionicons name="search-outline" size={30} color={Colors.primary} />
+            <View style={[styles.emptyIconWrap, { backgroundColor: isDark ? 'rgba(217,119,6,0.18)' : Colors.amberLight }]}>
+              <Ionicons name="search-outline" size={30} color={Colors.amber} />
             </View>
             <Text style={[styles.emptyTitle, { color: textPrimary }]}>No history yet</Text>
             <Text style={[styles.emptySub, { color: textMuted }]}>
@@ -258,7 +258,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    backgroundColor: 'rgba(255,255,255,0.15)',
     alignSelf: 'flex-start',
     paddingHorizontal: 10,
     paddingVertical: 5,
@@ -266,8 +265,7 @@ const styles = StyleSheet.create({
   },
   statsText: {
     fontSize: 12,
-    color: 'rgba(255,255,255,0.85)',
-    fontWeight: '500',
+    fontWeight: '600',
   },
   navSection: {
     paddingHorizontal: 12,

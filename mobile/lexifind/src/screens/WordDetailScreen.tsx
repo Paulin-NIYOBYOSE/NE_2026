@@ -47,14 +47,14 @@ export default function WordDetailScreen({ navigation, route }: Props) {
   const [refreshing, setRefreshing] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
-  const bg = isDark ? '#0F0E17' : '#F5F6FF';
+  const bg = isDark ? '#0F0E17' : Colors.background;
   const barBg = isDark ? '#1E1B2E' : '#FFFFFF';
-  const barBorder = isDark ? '#2E2B44' : '#E4E6F1';
+  const barBorder = isDark ? '#2E2B44' : Colors.border;
   const textPrimary = isDark ? '#F5F5FF' : '#1A1D2E';
   const textMuted = isDark ? '#6B6B8A' : '#9498B0';
-  const inputBg = isDark ? '#272438' : '#F5F6FF';
-  const inputBorder = isDark ? '#3A3658' : '#E4E6F1';
-  const dividerColor = isDark ? '#2E2B44' : '#E4E6F1';
+  const inputBg = isDark ? '#272438' : Colors.surfaceAlt;
+  const inputBorder = isDark ? '#3A3658' : Colors.border;
+  const dividerColor = isDark ? '#2E2B44' : Colors.border;
   const sourceMuted = isDark ? '#6B6B8A' : '#9498B0';
 
   // Stop audio whenever the displayed word changes (new inline search)

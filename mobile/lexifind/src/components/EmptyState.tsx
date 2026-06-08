@@ -16,14 +16,14 @@ export default function EmptyState({
   subtitle,
   isDark = false,
 }: Props) {
-  const iconBg = isDark ? 'rgba(91,79,233,0.18)' : Colors.primaryLight;
+  const iconBg = isDark ? 'rgba(217,119,6,0.18)' : Colors.amberLight;
   const textPrimary = isDark ? '#F5F5FF' : '#1A1D2E';
   const textSecondary = isDark ? '#B4B4CC' : '#4B5066';
 
   return (
     <View style={styles.container}>
       <View style={[styles.iconWrap, { backgroundColor: iconBg }]}>
-        <Ionicons name={icon} size={52} color={Colors.primary} />
+        <Ionicons name={icon} size={52} color={Colors.amber} />
       </View>
       <Text style={[styles.title, { color: textPrimary }]}>{title}</Text>
       {subtitle ? (

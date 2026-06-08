@@ -8,13 +8,13 @@ interface Props {
 }
 
 export default function LoadingSpinner({ message, isDark = false }: Props) {
-  const spinnerBg = isDark ? 'rgba(91,79,233,0.18)' : Colors.primaryLight;
+  const spinnerBg = isDark ? 'rgba(13,148,136,0.18)' : Colors.tealLight;
   const textColor = isDark ? '#B4B4CC' : '#4B5066';
 
   return (
     <View style={styles.container}>
       <View style={[styles.spinnerWrap, { backgroundColor: spinnerBg }]}>
-        <ActivityIndicator size="large" color={Colors.primary} />
+        <ActivityIndicator size="large" color={Colors.teal} />
       </View>
       {message ? (
         <Text style={[styles.message, { color: textColor }]}>{message}</Text>
