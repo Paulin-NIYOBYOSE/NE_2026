@@ -86,7 +86,7 @@ export default function MeaningCard({
               </View>
               {def.example ? (
                 <View
-                  style={[styles.exampleBox, { backgroundColor: exampleBg }]}
+                  style={[styles.exampleBox, { borderLeftColor: isDark ? 'rgba(109,100,255,0.55)' : posColors.text }]}
                 >
                   <Ionicons
                     name="chatbubble-ellipses-outline"
@@ -155,30 +155,31 @@ export default function MeaningCard({
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 18,
+    borderRadius: 20,
     marginBottom: 12,
     overflow: 'hidden',
     borderWidth: 1,
-    elevation: 2,
+    elevation: 3,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 14,
+    padding: 16,
   },
   badge: {
     paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 20,
+    paddingVertical: 7,
+    borderRadius: 22,
   },
   badgeText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700',
     textTransform: 'capitalize',
+    letterSpacing: 0.3,
   },
   headerRight: {
     flexDirection: 'row',
@@ -186,63 +187,65 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   defCount: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '500',
   },
   body: {
-    paddingHorizontal: 14,
-    paddingBottom: 14,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
   },
-  defBlock: { marginBottom: 8 },
+  defBlock: { marginBottom: 12 },
   defRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 10,
+    gap: 12,
   },
   bullet: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
-    marginTop: 7,
+    width: 5,
+    height: 5,
+    borderRadius: 3,
+    marginTop: 9,
     flexShrink: 0,
   },
   defText: {
     flex: 1,
     fontSize: 15,
-    lineHeight: 23,
+    lineHeight: 25,
     fontWeight: '400',
   },
   exampleBox: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginTop: 6,
+    marginTop: 10,
     marginLeft: 17,
-    borderRadius: 8,
-    padding: 10,
+    borderLeftWidth: 2.5,
+    paddingLeft: 12,
+    paddingVertical: 3,
     gap: 6,
   },
-  exampleIcon: { marginTop: 2, flexShrink: 0 },
+  exampleIcon: { marginTop: 3, flexShrink: 0 },
   exampleText: {
     flex: 1,
     fontSize: 13,
     fontStyle: 'italic',
-    lineHeight: 19,
+    lineHeight: 20,
   },
-  divider: { height: 1, marginVertical: 8 },
+  divider: { height: 1, marginVertical: 10 },
   chipsSection: {
-    marginTop: 8,
-    paddingTop: 10,
+    marginTop: 10,
+    paddingTop: 12,
     borderTopWidth: 1,
   },
   chipsSectionTitle: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '600',
-    marginBottom: 6,
+    marginBottom: 8,
     textTransform: 'uppercase',
-    letterSpacing: 0.8,
+    letterSpacing: 1,
   },
   chipsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    gap: 6,
   },
 });

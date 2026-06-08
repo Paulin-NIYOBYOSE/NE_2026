@@ -214,8 +214,8 @@ export default function SearchScreen({ navigation, route }: Props) {
 const styles = StyleSheet.create({
   root: { flex: 1 },
   header: {
-    paddingHorizontal: 16,
-    paddingBottom: 24,
+    paddingHorizontal: 20,
+    paddingBottom: 28,
     overflow: 'hidden',
   },
   circleTopRight: {
@@ -244,16 +244,16 @@ const styles = StyleSheet.create({
   },
   headerContent: { marginBottom: 16 },
   headerTitle: {
-    fontSize: 34,
+    fontSize: 36,
     fontWeight: '800',
     color: '#fff',
-    letterSpacing: 0.8,
+    letterSpacing: 0.5,
   },
   headerSubtitle: {
-    fontSize: 15,
+    fontSize: 14,
     color: 'rgba(255,255,255,0.78)',
     fontWeight: '500',
-    marginTop: 2,
+    marginTop: 4,
   },
   searchBarWrap: { marginTop: 4 },
   scroll: { flex: 1 },
@@ -267,11 +267,11 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   suggestionsLabel: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '600',
     textTransform: 'uppercase',
-    letterSpacing: 1,
-    marginBottom: 12,
+    letterSpacing: 1.4,
+    marginBottom: 14,
   },
   suggestionsRow: {
     flexDirection: 'row',
@@ -279,14 +279,15 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   chip: {
-    paddingHorizontal: 16,
-    paddingVertical: 9,
-    borderRadius: 24,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 26,
     borderWidth: 1.5,
   },
   chipText: {
     fontSize: 13,
     fontWeight: '600',
+    letterSpacing: 0.2,
     color: Colors.primary,
   },
 });

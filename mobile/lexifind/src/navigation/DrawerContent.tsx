@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   header: {
     paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingBottom: 22,
     overflow: 'hidden',
   },
   decorCircle: {
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
   },
   navSection: {
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingVertical: 10,
     borderBottomWidth: 1,
     gap: 4,
   },
@@ -279,14 +279,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 10,
-    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+    borderRadius: 14,
   },
   navIconWrap: {
-    width: 38,
-    height: 38,
-    borderRadius: 11,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -308,8 +308,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 18,
+    paddingVertical: 13,
     borderBottomWidth: 1,
   },
   sectionTitleRow: {
@@ -320,6 +320,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 14,
     fontWeight: '700',
+    letterSpacing: 0.1,
   },
   clearBtn: {
     flexDirection: 'row',
@@ -335,7 +336,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   scroll: { flex: 1 },
-  scrollContent: { paddingVertical: 4, flexGrow: 1 },
+  scrollContent: { paddingVertical: 6, paddingHorizontal: 4, flexGrow: 1 },
   emptyWrap: {
     alignItems: 'center',
     paddingVertical: 40,

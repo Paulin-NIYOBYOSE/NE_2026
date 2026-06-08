@@ -100,14 +100,14 @@ export default function WordCard({ entries, isDark = false }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 20,
+    borderRadius: 24,
     marginBottom: 16,
     overflow: 'hidden',
-    elevation: 6,
+    elevation: 8,
     shadowColor: Colors.primary,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
   },
   circleTopRight: {
     position: 'absolute',
@@ -128,8 +128,8 @@ const styles = StyleSheet.create({
     left: -25,
   },
   content: {
-    padding: 20,
-    gap: 12,
+    padding: 22,
+    gap: 14,
   },
   phoneticsStack: {
     gap: 6,
@@ -166,33 +166,33 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   word: {
-    fontSize: 34,
+    fontSize: 38,
     fontWeight: '800',
     color: '#fff',
-    letterSpacing: 0.5,
+    letterSpacing: 0.3,
   },
   statsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 4,
+    marginTop: 6,
   },
   statBadge: { alignItems: 'center' },
   statValue: {
-    fontSize: 22,
-    fontWeight: '700',
+    fontSize: 24,
+    fontWeight: '800',
     color: '#fff',
   },
   statLabel: {
-    fontSize: 11,
+    fontSize: 10,
     color: 'rgba(255,255,255,0.72)',
     fontWeight: '500',
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 0.7,
   },
   statDivider: {
     width: 1,
-    height: 28,
+    height: 32,
     backgroundColor: 'rgba(255,255,255,0.28)',
-    marginHorizontal: 20,
+    marginHorizontal: 22,
   },
 });

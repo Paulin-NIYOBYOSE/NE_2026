@@ -137,13 +137,13 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   button: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: 'rgba(255,255,255,0.22)',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
+    borderWidth: 1.5,
     borderColor: 'rgba(255,255,255,0.45)',
   },
   buttonDisabled: {
@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
   },
   buttonPlaying: {
     backgroundColor: 'rgba(255,255,255,0.35)',
-    borderColor: 'rgba(255,255,255,0.9)',
+    borderColor: 'rgba(255,255,255,0.95)',
   },
   buttonPaused: {
     backgroundColor: 'rgba(255,255,255,0.28)',
@@ -164,15 +164,15 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,50,80,0.5)',
   },
   stopWrap: {
-    width: 40,
-    height: 40,
+    width: 42,
+    height: 42,
     alignItems: 'center',
     justifyContent: 'center',
   },
   stopButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     backgroundColor: 'rgba(255,255,255,0.12)',
     alignItems: 'center',
     justifyContent: 'center',

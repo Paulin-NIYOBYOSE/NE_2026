@@ -49,9 +49,9 @@ export default function SynonymChip({
 
 const styles = StyleSheet.create({
   chip: {
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 22,
     marginRight: 6,
     marginBottom: 6,
     borderWidth: 1,
@@ -59,5 +59,6 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 13,
     fontWeight: '600',
+    letterSpacing: 0.2,
   },
 });
