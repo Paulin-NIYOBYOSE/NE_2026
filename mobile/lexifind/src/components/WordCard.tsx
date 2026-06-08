@@ -4,7 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { WordEntry } from '../types';
 import { Colors } from '../constants/colors';
 import AudioPlayer from './AudioPlayer';
-import { extractAudioUrl, extractPhoneticText } from '../utils/helpers';
+import { extractAllPhonetics, extractPhoneticText } from '../utils/helpers';
 
 interface Props {
   entries: WordEntry[];
@@ -15,8 +15,9 @@ export default function WordCard({ entries, isDark = false }: Props) {
   if (!entries.length) return null;
 
   const primary = entries[0];
-  const audioUrl = extractAudioUrl(entries);
-  const phoneticText = extractPhoneticText(entries);
+  const allPhonetics = extractAllPhonetics(entries);
+  // Fallback text for when no phonetic has an audio URL
+  const fallbackText = extractPhoneticText(entries);
 
   const totalMeanings = entries.reduce(
     (acc, e) => acc + (e.meanings?.length ?? 0),
@@ -42,7 +43,31 @@ export default function WordCard({ entries, isDark = false }: Props) {
       <View style={styles.content}>
         <Text style={styles.word}>{primary.word}</Text>
 
-        <AudioPlayer audioUrl={audioUrl} phoneticText={phoneticText} />
+        {allPhonetics.length === 0 ? (
+          // No audio in response — show phonetic text with disabled button
+          <AudioPlayer audioUrl={null} phoneticText={fallbackText} />
+        ) : allPhonetics.length === 1 ? (
+          // Single pronunciation — same as before
+          <AudioPlayer audioUrl={allPhonetics[0].audio} phoneticText={allPhonetics[0].text} />
+        ) : (
+          // Multiple pronunciations — labeled and numbered
+          <View style={styles.phoneticsStack}>
+            <Text style={styles.phoneticsLabel}>Pronunciations</Text>
+            {allPhonetics.map((p, i) => (
+              <View key={i} style={styles.pronunciationRow}>
+                <View style={styles.pronunciationBadge}>
+                  <Text style={styles.pronunciationNum}>{i + 1}</Text>
+                </View>
+                <View style={styles.pronunciationPlayer}>
+                  <AudioPlayer
+                    audioUrl={p.audio}
+                    phoneticText={p.text ?? `Variant ${i + 1}`}
+                  />
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
 
         <View style={styles.statsRow}>
           <View style={styles.statBadge}>
@@ -105,6 +130,40 @@ const styles = StyleSheet.create({
   content: {
     padding: 20,
     gap: 12,
+  },
+  phoneticsStack: {
+    gap: 6,
+  },
+  phoneticsLabel: {
+    fontSize: 10,
+    color: 'rgba(255,255,255,0.50)',
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 1.2,
+    marginBottom: 2,
+  },
+  pronunciationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  pronunciationBadge: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.35)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pronunciationNum: {
+    fontSize: 11,
+    color: '#fff',
+    fontWeight: '700',
+  },
+  pronunciationPlayer: {
+    flex: 1,
   },
   word: {
     fontSize: 34,

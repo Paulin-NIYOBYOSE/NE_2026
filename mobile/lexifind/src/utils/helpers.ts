@@ -38,6 +38,25 @@ export function extractAllAudioUrls(entries: WordEntry[]): string[] {
   return urls;
 }
 
+// Returns every unique audio URL paired with its phonetic text.
+// Used by WordCard to render one AudioPlayer per available pronunciation.
+export function extractAllPhonetics(
+  entries: WordEntry[],
+): Array<{ text: string | null; audio: string }> {
+  const seen = new Set<string>();
+  const result: Array<{ text: string | null; audio: string }> = [];
+  for (const entry of entries) {
+    for (const phonetic of entry.phonetics ?? []) {
+      const audio = phonetic.audio?.trim();
+      if (audio && audio.length > 0 && !seen.has(audio)) {
+        seen.add(audio);
+        result.push({ text: phonetic.text?.trim() || null, audio });
+      }
+    }
+  }
+  return result;
+}
+
 export function dedupeStrings(arr: string[]): string[] {
   const seen = new Set<string>();
   return arr.filter((s) => {
