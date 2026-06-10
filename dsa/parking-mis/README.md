@@ -197,4 +197,9 @@ g++ -std=c++17 -Wall -Wextra -O2 main.cpp -o parking && ./parking
   Option 3  → Plate RAC456B again  → Vehicle already parked
   Option 4  → Plate RAC456B, Exit 09:00 (before entry 09:30) → Invalid exit time
   Menu      → Enter "abc"          → Invalid input, re-prompted
-```
+``
+
+mkdir -p ~/tmp
+TMPDIR=~/tmp g++ -std=c++17 -Wall -Wextra -o parking main.cpp
+
+TMPDIR=~/tmp g++ -std=c++17 -Wall -Wextra -O2 main.cpp -o parking

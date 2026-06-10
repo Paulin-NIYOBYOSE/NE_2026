@@ -713,7 +713,6 @@ static void printMainMenu() {
     std::cout << "\n"
               << "  +--------------------------------------------------+\n"
               << "  |       SMART PARKING MANAGEMENT SYSTEM            |\n"
-              << "  |           Kigali City Parking Authority           |\n"
               << "  +--------------------------------------------------+\n"
               << "  |  [1]  Add New Parking Slot                       |\n"
               << "  |  [2]  View All Parking Slots                     |\n"
