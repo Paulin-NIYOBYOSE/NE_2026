@@ -1,0 +1,70 @@
+flowchart TD
+    START([Program Start]) --> INIT["Initialize ParkingSystem\nLoad default tariffs\n500 / 1000 / 2000 RWF"]
+    INIT --> SHOW_TARIFFS["Display current tariffs"]
+    SHOW_TARIFFS --> MAIN_MENU{Main Menu}
+
+    %% ── Option 1: Add Slot ───────────────────────────────────────────────────
+    MAIN_MENU -->|"[1] Add Slot"| IN_SLOT["Input: Slot ID, Type, Zone\n(validated)"]
+    IN_SLOT --> CHK_DUP{Slot ID\nalready exists?}
+    CHK_DUP -->|Yes| ERR_DUP["Error: Slot ID must be unique"]
+    ERR_DUP --> MAIN_MENU
+    CHK_DUP -->|No| SAVE_SLOT["Insert into slots map\nPush ID onto freeQueues"]
+    SAVE_SLOT --> OK_SLOT["[+] Slot added"]
+    OK_SLOT --> MAIN_MENU
+
+    %% ── Option 3: Vehicle Entry ──────────────────────────────────────────────
+    MAIN_MENU -->|"[3] Vehicle Entry"| CHK_SLOTS{Any slots\nconfigured?}
+    CHK_SLOTS -->|No| ERR_NO_SLOTS["Error: Add slots first"]
+    ERR_NO_SLOTS --> MAIN_MENU
+    CHK_SLOTS -->|Yes| IN_ENTRY["Input: Plate, Type, Entry Time\n(validated, not future)"]
+    IN_ENTRY --> CHK_ACTIVE{Plate already\nin activeSessions?}
+    CHK_ACTIVE -->|Yes| ERR_DUP_PLATE["Error: Vehicle already parked"]
+    ERR_DUP_PLATE --> MAIN_MENU
+    CHK_ACTIVE -->|No| POP_QUEUE["Pop next ID from\nfreeQueues for this type"]
+    POP_QUEUE --> CHK_FREE{Available slot\nfound?}
+    CHK_FREE -->|No| ERR_NO_SLOT["Error: No available slot of this type"]
+    ERR_NO_SLOT --> MAIN_MENU
+    CHK_FREE -->|Yes| MARK_OCC["Mark slot Occupied\nCreate ActiveSession\nStore in activeSessions"]
+    MARK_OCC --> OK_ENTRY["[+] Vehicle parked at slot N"]
+    OK_ENTRY --> MAIN_MENU
+
+    %% ── Option 4: Vehicle Exit ───────────────────────────────────────────────
+    MAIN_MENU -->|"[4] Vehicle Exit"| IN_EXIT["Input: Plate, Exit Time\n(validated, not future)"]
+    IN_EXIT --> CHK_SESSION{Session\nexists?}
+    CHK_SESSION -->|No| ERR_PLATE["Error: No session for plate"]
+    ERR_PLATE --> MAIN_MENU
+    CHK_SESSION -->|Yes| CHK_TIME{Exit time\n> entry time?}
+    CHK_TIME -->|No| ERR_TIME["Error: Exit must be after entry"]
+    ERR_TIME --> MAIN_MENU
+    CHK_TIME -->|Yes| CALC["Compute billedHours = ceil(secs / 3600)\nFetch current tariff\nfee = hours × rate"]
+    CALC --> RELEASE["Mark slot Available\nPush ID back to freeQueues"]
+    RELEASE --> FREEZE["Create CompletedTransaction\n(rate & fee frozen)\nAppend to transactions vector"]
+    FREEZE --> RECEIPT["Print formatted receipt"]
+    RECEIPT --> ERASE["Remove from activeSessions"]
+    ERASE --> MAIN_MENU
+
+    %% ── Option 5: Update Tariff ──────────────────────────────────────────────
+    MAIN_MENU -->|"[5] Update Tariff"| IN_TARIFF["Input: Vehicle type, New rate\n(positive number)"]
+    IN_TARIFF --> UPD_TARIFF["Update tariffs map\n(history unaffected)"]
+    UPD_TARIFF --> OK_TARIFF["[+] Tariff updated"]
+    OK_TARIFF --> MAIN_MENU
+
+    %% ── Option 7: Reports ────────────────────────────────────────────────────
+    MAIN_MENU -->|"[7] Reports"| REPORT_MENU{Reports Menu}
+
+    REPORT_MENU -->|"[1] Available Slots"| RPT1["Filter slots where status == Available\nSort by slot ID\nPrint table + count"]
+    RPT1 --> REPORT_MENU
+
+    REPORT_MENU -->|"[2] Active Parking"| RPT2["Collect activeSessions pointers\nSort by entryTime\nPrint table + count"]
+    RPT2 --> REPORT_MENU
+
+    REPORT_MENU -->|"[3] History"| RPT3["Iterate transactions vector\nPrint each record\nSum grand total"]
+    RPT3 --> REPORT_MENU
+
+    REPORT_MENU -->|"[4] Daily Revenue"| RPT4["Group transactions by formatDate(exitTime)\nSort dates\nPrint revenue per day + grand total"]
+    RPT4 --> REPORT_MENU
+
+    REPORT_MENU -->|"[0] Back"| MAIN_MENU
+
+    %% ── Option 0: Exit ───────────────────────────────────────────────────────
+    MAIN_MENU -->|"[0] Exit"| END([Goodbye])
